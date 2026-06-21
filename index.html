@@ -63,6 +63,14 @@
     position: fixed; top: 16px; right: 16px;
     display: flex; gap: 8px; z-index: 50; flex-wrap: wrap; justify-content: flex-end; max-width: 46vw;
   }
+  .gearbtn {
+    display: none;
+    position: fixed; top: 14px; right: 14px; z-index: 60;
+    font-family: inherit; font-size: 20px; line-height: 1;
+    background: var(--panel); border: 2px solid var(--line-thick); color: var(--ink);
+    width: 42px; height: 42px; cursor: pointer; transition: transform .2s;
+  }
+  .gearbtn.open { transform: rotate(90deg); }
   .iconbtn {
     font-family: inherit; font-weight: 900; font-size: 11px; letter-spacing: 0.12em;
     background: transparent; border: 2px solid var(--line-thick); color: var(--ink);
@@ -217,6 +225,20 @@
     .cursor { display: none !important; }
     .iconbtn { padding: 8px 9px; font-size: 10px; }
     .help { display: none !important; }
+
+    .gearbtn { display: block; }
+    .topbtns {
+      top: 64px; right: 14px; max-width: none;
+      flex-direction: column; align-items: stretch; gap: 8px;
+      background: var(--panel); border: 2px solid var(--line-thick);
+      padding: 12px; min-width: 150px;
+      display: none;
+    }
+    .topbtns.open { display: flex; }
+    .topbtns .iconbtn { font-size: 12px; padding: 11px 12px; text-align: center; }
+    .musicgroup { align-items: stretch; }
+    .volwrap { position: static; margin-top: 4px; justify-content: center; }
+    .volwrap input[type=range] { height: 90px; }
   }
   @media (min-width: 601px) {
     .numpad { display: none !important; }
@@ -225,9 +247,11 @@
 </head>
 <body>
 
+<button class="gearbtn" id="gearBtn" aria-label="Options">⚙</button>
+
 <div class="topbar">
   <h1>SUDOKUKU</h1>
-  <div class="topbtns">
+  <div class="topbtns" id="topbtns">
     <button class="iconbtn" id="googleBtn">Connexion</button>
     <div class="musicgroup">
       <button class="iconbtn" id="musicBtn">♪ Off</button>
@@ -566,6 +590,24 @@
   document.getElementById('nightBtn').addEventListener('click',()=>{
     document.body.classList.toggle('night');
     document.getElementById('nightBtn').textContent=document.body.classList.contains('night')?'Jour':'Nuit';
+  });
+
+  // ---- roue d'options (mobile) ----
+  const gearBtn=document.getElementById('gearBtn');
+  const topbtns=document.getElementById('topbtns');
+  function setMenu(open){
+    topbtns.classList.toggle('open', open);
+    gearBtn.classList.toggle('open', open);
+  }
+  gearBtn.addEventListener('click',e=>{ e.stopPropagation(); setMenu(!topbtns.classList.contains('open')); });
+  // fermer après un choix (sauf le slider de volume)
+  topbtns.addEventListener('click',e=>{
+    const b=e.target.closest('button');
+    if(b && b.id!=='musicBtn') setMenu(false);
+  });
+  // fermer en tapant ailleurs
+  document.addEventListener('click',e=>{
+    if(!topbtns.contains(e.target) && e.target!==gearBtn) setMenu(false);
   });
 
   // ---- curseur + molette ----
