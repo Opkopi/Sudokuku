@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUDOKU</title>
+<style>
+  :root {
+    --bg: #ece6d8;
+    --panel: #f4efe4;
+    --ink: #161310;
+    --line-thin: #b3a98f;
+    --line-thick: #161310;
+    --given: #161310;
+    --user: #b5481f;
+    --note: #8a8064;
+    --sel: #ddd2b4;
+    --peer: #e4dcc7;
+    --same: #d0c19a;
+    --accent: #b5481f;
+    --gold: #b5481f;
+    --cell: 60px;
+  }
+  body.night {
+    --bg: #14110d;
+    --panel: #1c1812;
+    --ink: #efe7d6;
+    --line-thin: #4a4234;
+    --line-thick: #efe7d6;
+    --given: #efe7d6;
+    --user: #e08a3c;
+    --note: #8a7d5f;
+    --sel: #36301f;
+    --peer: #2a251b;
+    --same: #4a3f24;
+    --accent: #e08a3c;
+    --gold: #e0b23c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html,body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px 40px;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .3s, color .3s;
+    cursor: default;
+  }
+  body.playing { cursor: none; }
+
+  .topbar {
+    width: 100%; max-width: 620px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px; gap: 10px;
+  }
+  h1 { font-size: 30px; font-weight: 900; letter-spacing: 0.16em; text-indent: 0.16em; text-align: center; }
+  .topbtns {
+    position: fixed; top: 16px; right: 16px;
+    display: flex; gap: 8px; z-index: 50; flex-wrap: wrap; justify-content: flex-end; max-width: 46vw;
+  }
+  .iconbtn {
+    font-family: inherit; font-weight: 900; font-size: 11px; letter-spacing: 0.12em;
+    background: transparent; border: 2px solid var(--line-thick); color: var(--ink);
+    padding: 9px 12px; cursor: pointer; text-transform: uppercase; transition: all .15s;
+  }
+  .iconbtn:hover { background: var(--ink); color: var(--bg); }
+  .iconbtn.on { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .diffs { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:16px; }
+  .diffs button {
+    font-family: inherit; font-weight: 900; font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; background: transparent;
+    border: 2px solid var(--line-thin); color: var(--ink);
+    padding: 9px 13px; cursor: pointer; transition: all .15s;
+  }
+  .diffs button:hover { border-color: var(--line-thick); }
+  .diffs button.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .diffs button.daily { border-color: var(--gold); color: var(--gold); }
+  .diffs button.daily.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+
+  .timer {
+    font-size: 64px; font-weight: 900; letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 4px; color: var(--accent);
+  }
+
+  .stage { position: relative; margin-top: 14px; }
+  .board {
+    display: grid; grid-template-columns: repeat(9, var(--cell)); grid-template-rows: repeat(9, var(--cell));
+    background: var(--line-thick); gap: 2px; border: 4px solid var(--line-thick);
+    touch-action: manipulation; transition: filter .25s, opacity .25s;
+  }
+  .board.hidden { filter: blur(14px); opacity: 0.25; pointer-events: none; }
+
+  .cell {
+    background: var(--panel); display: flex; align-items: center; justify-content: center;
+    font-size: 34px; font-weight: 900; user-select: none; position: relative; transition: background .08s;
+  }
+  .cell.bt { box-shadow: inset 0 3px 0 var(--line-thick); }
+  .cell.bl { box-shadow: inset 3px 0 0 var(--line-thick); }
+  .cell.bt.bl { box-shadow: inset 3px 0 0 var(--line-thick), inset 0 3px 0 var(--line-thick); }
+  .cell.given { color: var(--given); }
+  .cell.user  { color: var(--user); }
+  .cell.peer  { background: var(--peer); }
+  .cell.same  { background: var(--same); }
+  .cell.hover { background: var(--sel); }
+
+  .notes {
+    display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr);
+    width: 100%; height: 100%; padding: 5px; font-size: 15px; font-weight: 900; color: var(--note);
+  }
+  .notes span { display:flex; align-items:center; justify-content:center; }
+
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px; text-align: center; z-index: 5; padding: 16px;
+  }
+  .overlay button.big {
+    font-family: inherit; font-weight: 900; font-size: 16px; letter-spacing: 0.16em; text-transform: uppercase;
+    background: var(--accent); color: var(--bg); border: none; padding: 18px 34px; cursor: pointer; transition: transform .12s;
+  }
+  .overlay button.big:hover { transform: scale(1.04); }
+  .overlay .msg { font-size: 13px; letter-spacing:0.16em; text-transform:uppercase; font-weight:900; opacity:.85; }
+  .overlay .pct { font-size: 22px; font-weight: 900; color: var(--gold); letter-spacing: 0.06em; }
+  .hidden-el { display: none !important; }
+
+  /* classement */
+  .lb { width: 100%; max-width: 360px; }
+  .lb h3 { font-size: 12px; letter-spacing: 0.18em; margin-bottom: 10px; }
+  .lb ol { list-style: none; }
+  .lb li {
+    display: flex; justify-content: space-between; font-variant-numeric: tabular-nums;
+    font-weight: 900; font-size: 17px; padding: 7px 0; border-bottom: 2px solid var(--line-thin);
+  }
+  .lb li .rank { color: var(--gold); width: 28px; }
+  .lb li.you { color: var(--accent); }
+  .lb .empty { font-size: 12px; opacity: .6; font-weight: 900; letter-spacing: 0.1em; }
+
+  .cursor {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    font-size: 30px; font-weight: 900; color: var(--accent);
+    transform: translate(-50%, -50%); text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg), 0 0 3px var(--bg); display: none;
+  }
+
+  .controls { display:flex; gap:10px; margin-top:18px; }
+  .controls button {
+    font-family: inherit; font-weight: 900; font-size: 11px; letter-spacing:0.14em;
+    text-transform: uppercase; background: transparent; border: 2px solid var(--line-thin);
+    color: var(--ink); padding: 11px 18px; cursor: pointer; transition: all .15s;
+  }
+  .controls button:hover { border-color: var(--line-thick); }
+
+  .help {
+    margin-top: 18px; font-size: 11px; font-weight: 900; letter-spacing: 0.08em;
+    text-transform: uppercase; opacity: .55; text-align: center; max-width: 560px; line-height: 1.7;
+  }
+
+  @media (max-width: 600px) {
+    :root { --cell: 36px; }
+    h1 { font-size: 18px; }
+    .timer { font-size: 44px; }
+    .cell { font-size: 22px; }
+    .notes { font-size: 10px; }
+    .cursor { font-size: 22px; }
+    .iconbtn { padding: 8px 9px; font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>SUDOKU</h1>
+  <div class="topbtns">
+    <button class="iconbtn" id="googleBtn">Connexion</button>
+    <button class="iconbtn" id="musicBtn">♪ Off</button>
+    <button class="iconbtn" id="lbBtn">Top 5</button>
+    <button class="iconbtn" id="nightBtn">Nuit</button>
+  </div>
+</div>
+
+<div class="diffs" id="diffs">
+  <button data-d="daily" class="daily">★ Daily</button>
+  <button data-d="facile">Facile</button>
+  <button data-d="moyen" class="active">Moyen</button>
+  <button data-d="difficile">Difficile</button>
+  <button data-d="expert">Expert</button>
+</div>
+
+<div class="timer" id="timer">00:00</div>
+
+<div class="stage">
+  <div class="board hidden" id="board"></div>
+
+  <div class="overlay" id="overlay">
+    <div class="msg" id="overlayMsg">Prêt ?</div>
+    <div class="pct hidden-el" id="overlayPct"></div>
+    <button class="big" id="startBtn">Démarrer</button>
+  </div>
+
+  <div class="overlay hidden-el" id="lbOverlay">
+    <div class="lb">
+      <h3 id="lbTitle">Classement du jour</h3>
+      <ol id="lbList"></ol>
+    </div>
+    <button class="big" id="lbClose">Fermer</button>
+  </div>
+</div>
+
+<div class="controls hidden-el" id="controls">
+  <button id="pauseBtn">Pause</button>
+  <button id="newBtn">Nouvelle</button>
+</div>
+
+<div class="help">
+  Molette : chiffre · Clic gauche : placer / retirer · Clic droit : note (4 max)
+</div>
+
+<div class="cursor" id="cursor">1</div>
+
+<script>
+(function(){
+  let solution=[], puzzle=[], given=[], notes=[], errors=[];
+  let diff='moyen', curVal=1;
+  let startTime=null, elapsedBase=0, timerInt=null;
+  let state='idle';
+  let hoverIdx=-1;
+  let rng=Math.random;
+
+  const CLUES={ facile:[46,52], moyen:[36,45], difficile:[30,35], expert:[24,29] };
+  const DAILY_CLUES=[34,38];
+
+  // ---- RNG seedable ----
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  function dateKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=(rng()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+  function solveCount(g,limit){
+    let count=0;
+    (function bt(){
+      let idx=-1,min=10,cand=null;
+      for(let i=0;i<81;i++){
+        if(g[i]!==0) continue;
+        const used=new Array(10).fill(false);
+        const r=(i/9)|0,c=i%9,br=r-r%3,bc=c-c%3;
+        for(let k=0;k<9;k++){used[g[r*9+k]]=true;used[g[k*9+c]]=true;}
+        for(let a=0;a<3;a++)for(let b=0;b<3;b++)used[g[(br+a)*9+bc+b]]=true;
+        let n=0,list=[];
+        for(let v=1;v<=9;v++) if(!used[v]){n++;list.push(v);}
+        if(n<min){min=n;idx=i;cand=list;if(n===0)break;}
+      }
+      if(idx===-1){count++;return;}
+      if(min===0) return;
+      for(const v of cand){ g[idx]=v; bt(); g[idx]=0; if(count>=limit)return; }
+    })();
+    return count;
+  }
+
+  function fillGrid(g){
+    for(let i=0;i<81;i++){
+      if(g[i]!==0) continue;
+      const r=(i/9)|0,c=i%9,br=r-r%3,bc=c-c%3;
+      const used=new Array(10).fill(false);
+      for(let k=0;k<9;k++){used[g[r*9+k]]=true;used[g[k*9+c]]=true;}
+      for(let a=0;a<3;a++)for(let b=0;b<3;b++)used[g[(br+a)*9+bc+b]]=true;
+      const opts=shuffle([1,2,3,4,5,6,7,8,9].filter(v=>!used[v]));
+      for(const v of opts){ g[i]=v; if(fillGrid(g))return true; g[i]=0; }
+      return false;
+    }
+    return true;
+  }
+
+  function generate(){
+    const isDaily = diff==='daily';
+    rng = isDaily ? mulberry32(hashStr(dateKey())) : Math.random;
+    const full=new Array(81).fill(0);
+    fillGrid(full);
+    solution=full.slice();
+    const pz=full.slice();
+    const [lo,hi]= isDaily ? DAILY_CLUES : CLUES[diff];
+    const target=lo+((rng()*(hi-lo+1))|0);
+    const order=shuffle([...Array(81).keys()]);
+    let clues=81;
+    for(const idx of order){
+      if(clues<=target) break;
+      const bak=pz[idx]; if(bak===0) continue;
+      pz[idx]=0;
+      if(solveCount(pz.slice(),2)!==1) pz[idx]=bak; else clues--;
+    }
+    puzzle=pz.slice();
+    given=pz.map(v=>v!==0);
+    notes=Array.from({length:81},()=>[]);
+    errors=new Array(81).fill(false);
+    rng=Math.random;
+  }
+
+  const board=document.getElementById('board');
+  function build(){
+    board.innerHTML='';
+    for(let i=0;i<81;i++){
+      const d=document.createElement('div');
+      d.className='cell';
+      const r=(i/9)|0,c=i%9;
+      if(r%3===0&&r!==0) d.classList.add('bt');
+      if(c%3===0&&c!==0) d.classList.add('bl');
+      d.dataset.i=i;
+      d.addEventListener('mouseenter',()=>{ hoverIdx=i; render(); });
+      d.addEventListener('mouseleave',()=>{ if(hoverIdx===i){hoverIdx=-1;render();} });
+      d.addEventListener('click',()=>leftClick(i));
+      d.addEventListener('contextmenu',e=>{ e.preventDefault(); rightClick(i); });
+      board.appendChild(d);
+    }
+  }
+
+  function render(){
+    const cells=board.children;
+    let hr=-1,hc=-1,hv=0;
+    if(hoverIdx>=0){ hr=(hoverIdx/9)|0; hc=hoverIdx%9; hv=puzzle[hoverIdx]; }
+    for(let i=0;i<81;i++){
+      const cell=cells[i];
+      const r=(i/9)|0,c=i%9;
+      cell.className='cell';
+      if(r%3===0&&r!==0) cell.classList.add('bt');
+      if(c%3===0&&c!==0) cell.classList.add('bl');
+      if(given[i]) cell.classList.add('given');
+      else if(puzzle[i]!==0) cell.classList.add('user');
+      if(hoverIdx>=0){
+        const sameBox=((r-r%3)===(hr-hr%3))&&((c-c%3)===(hc-hc%3));
+        if((r===hr||c===hc||sameBox)&&i!==hoverIdx) cell.classList.add('peer');
+        if(hv!==0&&puzzle[i]===hv&&i!==hoverIdx) cell.classList.add('same');
+        if(i===hoverIdx) cell.classList.add('hover');
+      }
+      if(puzzle[i]!==0){ cell.textContent=puzzle[i]; }
+      else if(notes[i].length){
+        cell.textContent='';
+        const nb=document.createElement('div'); nb.className='notes';
+        for(let k=0;k<4;k++){ const s=document.createElement('span'); s.textContent=notes[i][k]||''; nb.appendChild(s); }
+        cell.appendChild(nb);
+      } else cell.textContent='';
+    }
+  }
+
+  function leftClick(i){
+    if(state!=='playing'||given[i]) return;
+    if(puzzle[i]===curVal){ puzzle[i]=0; }
+    else { puzzle[i]=curVal; notes[i]=[]; }
+    render(); checkWin();
+  }
+  function rightClick(i){
+    if(state!=='playing'||given[i]||puzzle[i]!==0) return;
+    const idx=notes[i].indexOf(curVal);
+    if(idx>=0){ notes[i].splice(idx,1); }
+    else if(notes[i].length<4){ notes[i].push(curVal); notes[i].sort(); }
+    render();
+  }
+
+  function checkWin(){
+    for(let i=0;i<81;i++) if(puzzle[i]!==solution[i]) return;
+    state='won';
+    clearInterval(timerInt);
+    document.body.classList.remove('playing');
+    cursor.style.display='none';
+    const t=elapsed();
+    if(diff==='daily'){ submitDaily(t); }
+    else { showStart('Résolu en '+fmt(t),'Nouvelle grille'); }
+  }
+
+  // ---- timer ----
+  function elapsed(){ return elapsedBase + (startTime?((Date.now()-startTime)/1000)|0:0); }
+  function fmt(s){ const m=(s/60)|0; return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+  function tick(){ document.getElementById('timer').textContent=fmt(elapsed()); }
+  function runTimer(){ clearInterval(timerInt); startTime=Date.now(); tick(); timerInt=setInterval(tick,1000); }
+  function stopTimer(){ elapsedBase=elapsed(); startTime=null; clearInterval(timerInt); }
+
+  // ---- overlays ----
+  const overlay=document.getElementById('overlay');
+  const overlayMsg=document.getElementById('overlayMsg');
+  const overlayPct=document.getElementById('overlayPct');
+  const startBtn=document.getElementById('startBtn');
+  function showStart(msg,btn,pct){
+    overlayMsg.textContent=msg;
+    startBtn.textContent=btn;
+    if(pct){ overlayPct.textContent=pct; overlayPct.classList.remove('hidden-el'); }
+    else overlayPct.classList.add('hidden-el');
+    overlay.classList.remove('hidden-el');
+    document.getElementById('lbOverlay').classList.add('hidden-el');
+    board.classList.add('hidden');
+  }
+  function hideStart(){ overlay.classList.add('hidden-el'); board.classList.remove('hidden'); }
+
+  function play(){
+    state='playing'; hideStart(); runTimer();
+    document.body.classList.add('playing');
+    cursor.style.display='block';
+    document.getElementById('controls').classList.remove('hidden-el');
+  }
+  function pause(){
+    state='paused'; stopTimer();
+    document.body.classList.remove('playing'); cursor.style.display='none';
+    showStart('Pause — '+fmt(elapsed()),'Reprendre');
+  }
+  function newGame(){
+    stopTimer(); elapsedBase=0; startTime=null;
+    document.getElementById('timer').textContent='00:00';
+    state='idle';
+    generate(); render();
+    document.getElementById('controls').classList.remove('hidden-el');
+    const pb=document.getElementById('pauseBtn');
+    if(diff==='daily'){ pb.classList.add('hidden-el'); } else { pb.classList.remove('hidden-el'); }
+    const label = diff==='daily' ? 'Daily — '+dateKey() : 'Prêt ?';
+    showStart(label,'Démarrer');
+  }
+
+  startBtn.addEventListener('click',()=>{
+    if(state==='won') { newGame(); play(); }
+    else if(state==='idle') play();
+    else if(state==='paused') play();
+  });
+
+  document.getElementById('pauseBtn').addEventListener('click',()=>{ if(state==='playing') pause(); else if(state==='paused') play(); });
+  document.getElementById('newBtn').addEventListener('click',()=>{ newGame(); });
+
+  document.getElementById('diffs').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    document.querySelectorAll('#diffs button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); diff=b.dataset.d; newGame();
+  });
+
+  document.getElementById('nightBtn').addEventListener('click',()=>{
+    document.body.classList.toggle('night');
+    document.getElementById('nightBtn').textContent=document.body.classList.contains('night')?'Jour':'Nuit';
+  });
+
+  // ---- curseur + molette ----
+  const cursor=document.getElementById('cursor');
+  document.addEventListener('mousemove',e=>{ cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
+  window.addEventListener('wheel',e=>{
+    if(state!=='playing') return;
+    e.preventDefault();
+    if(e.deltaY>0) curVal=curVal%9+1; else curVal=(curVal+7)%9+1;
+    cursor.textContent=curVal;
+  },{passive:false});
+  document.addEventListener('keydown',e=>{
+    if(e.key>='1'&&e.key<='9'){ curVal=+e.key; cursor.textContent=curVal; }
+    else if(e.key==='Escape'&&state==='playing'&&diff!=='daily') pause();
+  });
+
+  // ---- classement (stockage partagé si dispo, sinon local) ----
+  const hasStore = typeof window.storage!=='undefined' && window.storage && window.storage.get;
+  async function loadScores(key){
+    if(hasStore){
+      try{ const r=await window.storage.get(key,true); return r&&r.value?JSON.parse(r.value):[]; }catch(_){ return []; }
+    } else {
+      try{ return JSON.parse(localStorage.getItem('sudoku_'+key)||'[]'); }catch(_){ return []; }
+    }
+  }
+  async function saveScores(key,arr){
+    arr.sort((a,b)=>a-b); arr=arr.slice(0,200);
+    if(hasStore){ try{ await window.storage.set(key,JSON.stringify(arr),true); }catch(_){ } }
+    else { try{ localStorage.setItem('sudoku_'+key,JSON.stringify(arr)); }catch(_){ } }
+    return arr;
+  }
+
+  // CDF lognormale approx pour le percentile quand peu de joueurs
+  function erf(x){ const t=1/(1+0.3275911*Math.abs(x)); const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x); return x>=0?y:-y; }
+  function syntheticCDF(t){ const mu=Math.log(480), sigma=0.45; return 0.5*(1+erf((Math.log(Math.max(t,1))-mu)/(sigma*Math.SQRT2))); }
+
+  function percentile(scores, myTime){
+    const total=scores.length;
+    const rank=scores.filter(s=>s<myTime).length; // joueurs plus rapides
+    const w=Math.min(total,40)/40;
+    const realFrac= total>0 ? rank/total : 0.5;
+    const frac = w*realFrac + (1-w)*syntheticCDF(myTime);
+    return Math.max(1, Math.round(frac*100));
+  }
+
+  function fbReady(){ return window.SUDOKU_FB && window.SUDOKU_FB.enabled; }
+  function fbUser(){ return fbReady() ? window.SUDOKU_FB.user : null; }
+
+  async function submitDaily(myTime){
+    const key='daily:'+dateKey();
+    lastDailyTime=myTime;
+
+    if(fbUser()){
+      // classement partagé Firestore
+      let all=[];
+      try{ all=await window.SUDOKU_FB.top(dateKey()); }catch(_){ all=[]; }
+      const times=all.map(s=>s.time);
+      const pct=percentile(times, myTime);
+      try{ await window.SUDOKU_FB.submit(dateKey(), myTime, fbUser().displayName||'Anonyme'); }catch(_){}
+      showStart('Daily résolu — '+fmt(myTime), 'Voir le classement', 'Top '+pct+'% des joueurs');
+    } else {
+      // repli local
+      let scores=await loadScores(key);
+      const pct=percentile(scores, myTime);
+      scores.push(myTime);
+      scores=await saveScores(key,scores);
+      showStart('Daily résolu — '+fmt(myTime), 'Voir le classement', 'Top '+pct+'% des joueurs');
+    }
+    startBtn.onclick=()=>{ startBtn.onclick=null; renderLeaderboard(); };
+  }
+
+  let lastDailyTime=null;
+  async function renderLeaderboard(){
+    document.getElementById('lbTitle').textContent='Daily — '+dateKey();
+    const list=document.getElementById('lbList'); list.innerHTML='';
+
+    let rows=[]; // {time, name}
+    if(fbUser()){
+      let all=[];
+      try{ all=await window.SUDOKU_FB.top(dateKey()); }catch(_){ all=[]; }
+      rows=all.map(s=>({time:s.time,name:s.name||'Anonyme'})).sort((a,b)=>a.time-b.time);
+    } else {
+      const scores=(await loadScores('daily:'+dateKey())).slice().sort((a,b)=>a-b);
+      rows=scores.map(s=>({time:s,name:null}));
+    }
+
+    if(!rows.length){
+      const li=document.createElement('li'); li.className='empty';
+      li.textContent='Aucun score enregistré aujourd\'hui.'; list.appendChild(li);
+    } else {
+      const myName = fbUser() ? (fbUser().displayName||'') : null;
+      const top=rows.slice(0,5);
+      let youShown=false;
+      top.forEach((row,i)=>{
+        const li=document.createElement('li');
+        const isYou = !youShown && ((myName!==null && row.name===myName) || (myName===null && lastDailyTime!==null && row.time===lastDailyTime));
+        if(isYou){ li.classList.add('you'); youShown=true; }
+        const label = row.name ? row.name : fmt(row.time);
+        li.innerHTML='<span class="rank">'+(i+1)+'</span><span>'+(row.name? row.name+' · ':'')+fmt(row.time)+(isYou?'  ◄':'')+'</span>';
+        list.appendChild(li);
+      });
+      if(!youShown){
+        let pos=-1, myTime=lastDailyTime;
+        if(myName!==null){ pos=rows.findIndex(r=>r.name===myName); if(pos>=0) myTime=rows[pos].time; }
+        else if(lastDailyTime!==null){ pos=rows.findIndex(r=>r.time===lastDailyTime); }
+        if(pos>=0 && myTime!==null){
+          const li=document.createElement('li'); li.className='you';
+          li.innerHTML='<span class="rank">'+(pos+1)+'</span><span>'+(myName||'toi')+' · '+fmt(myTime)+'  ◄</span>';
+          list.appendChild(li);
+        }
+      }
+    }
+    overlay.classList.add('hidden-el');
+    document.getElementById('lbOverlay').classList.remove('hidden-el');
+    board.classList.add('hidden');
+  }
+  document.getElementById('lbBtn').addEventListener('click',()=>{
+    if(state==='playing') return;
+    renderLeaderboard();
+  });
+  document.getElementById('lbClose').addEventListener('click',()=>{
+    document.getElementById('lbOverlay').classList.add('hidden-el');
+    if(state==='won'||state==='idle'||state==='paused'){
+      const label = diff==='daily' ? 'Daily — '+dateKey() : 'Prêt ?';
+      showStart(state==='won'?'Rejouer ?':label, state==='won'?'Nouvelle grille':'Démarrer');
+    }
+  });
+
+  // ---- connexion Google ----
+  const googleBtn=document.getElementById('googleBtn');
+  function refreshGoogleBtn(){
+    if(!fbReady()){ googleBtn.textContent='Hors-ligne'; googleBtn.title='Firebase non configuré — classement local'; return; }
+    const u=fbUser();
+    if(u){ googleBtn.textContent=(u.displayName||'Compte').split(' ')[0]; googleBtn.classList.add('on'); }
+    else { googleBtn.textContent='Connexion'; googleBtn.classList.remove('on'); }
+  }
+  googleBtn.addEventListener('click',async()=>{
+    if(!fbReady()) return;
+    if(fbUser()){ try{ await window.SUDOKU_FB.signOut(); }catch(_){} }
+    else { try{ await window.SUDOKU_FB.signIn(); }catch(_){} }
+  });
+  window.addEventListener('sudoku-auth',refreshGoogleBtn);
+  setTimeout(refreshGoogleBtn,300);
+
+  // ---- musique chill générative (Web Audio) ----
+  let actx=null, musicGain=null, musicTimer=null, musicOn=false;
+  const SCALE=[0,3,5,7,10]; // pentatonique mineure
+  const ROOT=220; // A3
+  const CHORDS=[[0,3,7],[ -2,2,5],[3,7,10],[-4,0,3]];
+  let chordIdx=0;
+  function noteFreq(semi){ return ROOT*Math.pow(2,semi/12); }
+  function playPad(){
+    if(!actx) return;
+    const now=actx.currentTime;
+    const chord=CHORDS[chordIdx%CHORDS.length]; chordIdx++;
+    chord.forEach((semi,k)=>{
+      const o=actx.createOscillator(); const g=actx.createGain(); const f=actx.createBiquadFilter();
+      o.type=k===0?'sine':'triangle';
+      o.frequency.value=noteFreq(semi)*(k===2?2:1);
+      o.detune.value=(Math.random()*8-4);
+      f.type='lowpass'; f.frequency.value=900; f.Q.value=0.7;
+      g.gain.setValueAtTime(0,now);
+      g.gain.linearRampToValueAtTime(0.12,now+1.4);
+      g.gain.linearRampToValueAtTime(0.0001,now+3.6);
+      o.connect(f); f.connect(g); g.connect(musicGain);
+      o.start(now); o.stop(now+3.8);
+    });
+    // petite note mélodique douce
+    if(Math.random()<0.6){
+      const o=actx.createOscillator(); const g=actx.createGain();
+      const semi=SCALE[(Math.random()*SCALE.length)|0]+12;
+      o.type='sine'; o.frequency.value=noteFreq(semi);
+      const t0=now+0.6;
+      g.gain.setValueAtTime(0,t0);
+      g.gain.linearRampToValueAtTime(0.07,t0+0.15);
+      g.gain.linearRampToValueAtTime(0.0001,t0+1.6);
+      o.connect(g); g.connect(musicGain);
+      o.start(t0); o.stop(t0+1.8);
+    }
+  }
+  function startMusic(){
+    if(!actx){
+      actx=new (window.AudioContext||window.webkitAudioContext)();
+      musicGain=actx.createGain(); musicGain.gain.value=0.5; musicGain.connect(actx.destination);
+    }
+    if(actx.state==='suspended') actx.resume();
+    musicOn=true; playPad();
+    musicTimer=setInterval(playPad,3000);
+  }
+  function stopMusic(){ musicOn=false; clearInterval(musicTimer); }
+  document.getElementById('musicBtn').addEventListener('click',function(){
+    if(musicOn){ stopMusic(); this.textContent='♪ Off'; this.classList.remove('on'); }
+    else { startMusic(); this.textContent='♪ On'; this.classList.add('on'); }
+  });
+
+  build();
+  newGame();
+})();
+</script>
+<script type="module">
+  // ============================================================
+  //  CONFIG FIREBASE — remplace par TES clés (console Firebase)
+  //  Si tu laisses les valeurs "TON_..." le jeu fonctionne quand
+  //  même, mais le classement reste LOCAL (pas de login Google).
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "TON_API_KEY",
+    authDomain: "TON_PROJET.firebaseapp.com",
+    projectId: "TON_PROJET",
+    storageBucket: "TON_PROJET.appspot.com",
+    messagingSenderId: "TON_SENDER_ID",
+    appId: "TON_APP_ID"
+  };
+
+  const enabled = !firebaseConfig.apiKey.startsWith("TON_");
+  window.SUDOKU_FB = { enabled };
+
+  if (enabled) {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } =
+      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getFirestore, collection, doc, setDoc, getDocs, query, orderBy, limit } =
+      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    window.SUDOKU_FB = {
+      enabled: true, auth, db, user: null,
+      signIn: () => signInWithPopup(auth, provider),
+      signOut: () => signOut(auth),
+      // écrit le meilleur temps du joueur pour la grille du jour
+      submit: async (dateKey, time, name) => {
+        const ref = doc(db, "daily", dateKey, "scores", auth.currentUser.uid);
+        await setDoc(ref, { time, name, ts: Date.now() }, { merge: false });
+      },
+      // récupère tous les scores du jour, triés
+      top: async (dateKey) => {
+        const q = query(collection(db, "daily", dateKey, "scores"), orderBy("time", "asc"), limit(200));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => d.data());
+      }
+    };
+    onAuthStateChanged(auth, (u) => {
+      window.SUDOKU_FB.user = u;
+      window.dispatchEvent(new CustomEvent("sudoku-auth", { detail: u }));
+    });
+  }
+</script>
+</body>
+</html>
