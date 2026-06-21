@@ -574,7 +574,13 @@
     else { try{ await window.SUDOKU_FB.signIn(); }catch(_){} }
   });
   window.addEventListener('sudoku-auth',refreshGoogleBtn);
-  setTimeout(refreshGoogleBtn,300);
+  window.addEventListener('sudoku-fb-ready',refreshGoogleBtn);
+  // le module Firebase charge en asynchrone : on réessaie quelques fois
+  let _fbTries=0;
+  const _fbPoll=setInterval(()=>{
+    refreshGoogleBtn();
+    if(fbReady()||++_fbTries>40) clearInterval(_fbPoll); // ~8s max
+  },200);
 
   // ---- musique chill générative (Web Audio) ----
   let actx=null, musicGain=null, musicTimer=null, musicOn=false;
@@ -650,6 +656,7 @@
   window.SUDOKU_FB = { enabled };
 
   if (enabled) {
+   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } =
       await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
@@ -681,6 +688,13 @@
       window.SUDOKU_FB.user = u;
       window.dispatchEvent(new CustomEvent("sudoku-auth", { detail: u }));
     });
+    window.dispatchEvent(new Event("sudoku-fb-ready"));
+    console.log("[Sudokuku] Firebase prêt.");
+   } catch (err) {
+    console.error("[Sudokuku] Échec du chargement de Firebase :", err);
+    window.SUDOKU_FB = { enabled: false, error: String(err) };
+    window.dispatchEvent(new Event("sudoku-fb-ready"));
+   }
   }
 </script>
 </body>
