@@ -582,52 +582,18 @@
     if(fbReady()||++_fbTries>40) clearInterval(_fbPoll); // ~8s max
   },200);
 
-  // ---- musique chill générative (Web Audio) ----
-  let actx=null, musicGain=null, musicTimer=null, musicOn=false;
-  const SCALE=[0,3,5,7,10]; // pentatonique mineure
-  const ROOT=220; // A3
-  const CHORDS=[[0,3,7],[ -2,2,5],[3,7,10],[-4,0,3]];
-  let chordIdx=0;
-  function noteFreq(semi){ return ROOT*Math.pow(2,semi/12); }
-  function playPad(){
-    if(!actx) return;
-    const now=actx.currentTime;
-    const chord=CHORDS[chordIdx%CHORDS.length]; chordIdx++;
-    chord.forEach((semi,k)=>{
-      const o=actx.createOscillator(); const g=actx.createGain(); const f=actx.createBiquadFilter();
-      o.type=k===0?'sine':'triangle';
-      o.frequency.value=noteFreq(semi)*(k===2?2:1);
-      o.detune.value=(Math.random()*8-4);
-      f.type='lowpass'; f.frequency.value=900; f.Q.value=0.7;
-      g.gain.setValueAtTime(0,now);
-      g.gain.linearRampToValueAtTime(0.12,now+1.4);
-      g.gain.linearRampToValueAtTime(0.0001,now+3.6);
-      o.connect(f); f.connect(g); g.connect(musicGain);
-      o.start(now); o.stop(now+3.8);
-    });
-    // petite note mélodique douce
-    if(Math.random()<0.6){
-      const o=actx.createOscillator(); const g=actx.createGain();
-      const semi=SCALE[(Math.random()*SCALE.length)|0]+12;
-      o.type='sine'; o.frequency.value=noteFreq(semi);
-      const t0=now+0.6;
-      g.gain.setValueAtTime(0,t0);
-      g.gain.linearRampToValueAtTime(0.07,t0+0.15);
-      g.gain.linearRampToValueAtTime(0.0001,t0+1.6);
-      o.connect(g); g.connect(musicGain);
-      o.start(t0); o.stop(t0+1.8);
-    }
-  }
+  // ---- musique : MP3 en boucle ----
+  let bgAudio=null, musicOn=false;
   function startMusic(){
-    if(!actx){
-      actx=new (window.AudioContext||window.webkitAudioContext)();
-      musicGain=actx.createGain(); musicGain.gain.value=0.5; musicGain.connect(actx.destination);
+    if(!bgAudio){
+      bgAudio=new Audio('Tangerine_Prod.mp3');
+      bgAudio.loop=true;
+      bgAudio.volume=0.5;
     }
-    if(actx.state==='suspended') actx.resume();
-    musicOn=true; playPad();
-    musicTimer=setInterval(playPad,3000);
+    bgAudio.play().catch(()=>{});
+    musicOn=true;
   }
-  function stopMusic(){ musicOn=false; clearInterval(musicTimer); }
+  function stopMusic(){ if(bgAudio) bgAudio.pause(); musicOn=false; }
   document.getElementById('musicBtn').addEventListener('click',function(){
     if(musicOn){ stopMusic(); this.textContent='♪ Off'; this.classList.remove('on'); }
     else { startMusic(); this.textContent='♪ On'; this.classList.add('on'); }
