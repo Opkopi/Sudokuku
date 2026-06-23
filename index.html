@@ -51,7 +51,7 @@
     transition: background .3s, color .3s;
     cursor: default;
   }
-  body.playing { cursor: none; }
+  body.playing .board { cursor: none; }
 
   .topbar {
     width: 100%; max-width: 620px;
@@ -217,7 +217,6 @@
 
   @media (max-width: 600px) {
     :root { --cell: 36px; }
-    body.playing { cursor: default; }
     h1 { font-size: 18px; }
     .timer { font-size: 44px; }
     .cell { font-size: 22px; }
@@ -243,11 +242,116 @@
   @media (min-width: 601px) {
     .numpad { display: none !important; }
   }
+
+  /* ===== système de slides (2 jeux) ===== */
+  .slides {
+    position: fixed; inset: 0; width: 200vw; z-index: 1;
+    display: flex;
+    transition: transform .5s cubic-bezier(.6,.05,.3,1);
+  }
+  .slides.show-words { transform: translateX(-100vw); }
+  .slide {
+    width: 100vw; height: 100vh; overflow-y: auto; position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px 40px;
+  }
+
+  /* flèches de navigation entre jeux */
+  .navarrow {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    width: 46px; height: 70px; z-index: 70;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--panel); border: 2px solid var(--line-thick); color: var(--ink);
+    font-size: 24px; font-weight: 900; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .navarrow.visible { opacity: .9; pointer-events: auto; }
+  .navarrow:hover { opacity: 1; background: var(--accent); color: var(--bg); }
+  #arrowRight { right: 0; border-right: none; }
+  #arrowLeft { left: 0; border-left: none; }
+
+  body.on-words .topbtns, body.on-words .gearbtn { display: none !important; }
+  /* instructions/crédit : chacun sur sa fenêtre */
+  .help-words, .credit-words { display: none; }
+  body.on-words #help, body.on-words .credit:not(.credit-words) { display: none !important; }
+  body.on-words .help-words { display: flex; }
+  body.on-words .credit-words { display: block; }
+  .wtopbtns {
+    position: fixed; top: 16px; right: 16px; display: none; gap: 8px; z-index: 50;
+  }
+  body.on-words .wtopbtns { display: flex; }
+
+  .wmenu { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .wmissed {
+    max-width: 460px; text-align: center; font-size: 13px; font-weight: 900;
+    letter-spacing: 0.04em; line-height: 1.8; text-transform: uppercase;
+    opacity: .7; color: var(--user); margin: -4px 0 6px;
+  }
+  .wmissed .ml { color: var(--ink); opacity: .55; display: block; font-size: 11px; margin-bottom: 4px; }
+  .overlay button.big.ghost {
+    background: transparent; color: var(--ink); border: 2px solid var(--line-thick);
+  }
+  .overlay button.big.ghost:hover { background: var(--ink); color: var(--bg); }
+
+  /* ===== jeu de mots ===== */
+  .wtheme {
+    font-size: 13px; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 4px; text-align: center;
+  }
+  .wtimer {
+    font-size: 64px; font-weight: 900; font-variant-numeric: tabular-nums;
+    line-height: 1; margin-bottom: 6px; color: var(--accent);
+  }
+  .wscore {
+    font-size: 12px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
+    opacity: .6; margin-bottom: 30px;
+  }
+  .scramble {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    margin: 10px 0 30px;
+  }
+  .stile {
+    width: 56px; height: 66px; display: flex; align-items: center; justify-content: center;
+    background: var(--panel); border: 3px solid var(--line-thick);
+    font-size: 34px; font-weight: 900; text-transform: uppercase;
+    color: var(--ink); user-select: none;
+  }
+  .winput {
+    font-family: inherit; font-weight: 900; font-size: 28px; text-transform: uppercase;
+    letter-spacing: 0.18em; text-align: center;
+    background: transparent; border: none; border-bottom: 4px solid var(--line-thick);
+    color: var(--user); padding: 8px 4px; width: 320px; max-width: 80vw; outline: none;
+  }
+  .winput.flash-ok { border-color: #3a8a4a; }
+  .wactions { display: flex; gap: 10px; margin-top: 26px; }
+  .wactions button {
+    font-family: inherit; font-weight: 900; font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; background: transparent; border: 2px solid var(--line-thin);
+    color: var(--ink); padding: 11px 18px; cursor: pointer; transition: all .15s;
+  }
+  .wactions button:hover { border-color: var(--line-thick); }
+  .whint { margin-top: 16px; font-size: 10px; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; opacity: .45; text-align: center; }
+  .wfound {
+    margin-top: 22px; max-width: 420px; text-align: center;
+    font-size: 12px; font-weight: 900; letter-spacing: 0.06em; opacity: .55;
+    text-transform: uppercase; line-height: 1.9;
+  }
+
+  @media (max-width: 600px) {
+    .stile { width: 40px; height: 50px; font-size: 24px; }
+    .winput { font-size: 22px; }
+    .wtimer { font-size: 44px; }
+    .navarrow { opacity: .9; pointer-events: auto; height: 56px; width: 38px; }
+  }
 </style>
 </head>
 <body>
 
 <button class="gearbtn" id="gearBtn" aria-label="Options">⚙</button>
+
+<div class="slides" id="slides">
+<div class="slide" id="slideSudoku">
 
 <div class="topbar">
   <h1>SUDOKUKU</h1>
@@ -297,14 +401,6 @@
   <button id="newBtn">Nouvelle</button>
 </div>
 
-<div class="help" id="help">
-  <div class="hline"><b>Molette</b><br>changer de chiffre</div>
-  <div class="hline"><b>Clic gauche</b><br>placer / retirer</div>
-  <div class="hline"><b>Clic droit</b><br>note (4 max)</div>
-</div>
-
-<div class="credit">♪ Tangerine Prod.</div>
-
 <div class="numpad hidden-el" id="numpad">
   <button data-n="1">1</button>
   <button data-n="2">2</button>
@@ -318,6 +414,74 @@
   <button data-n="note" id="noteToggle">Notes</button>
   <button data-n="0" id="eraseKey">Effacer</button>
 </div>
+
+</div><!-- /slideSudoku -->
+
+<div class="slide" id="slideWords">
+  <div class="topbar"><h1>ANAGRAMME</h1>
+    <div class="wtopbtns">
+      <button class="iconbtn" id="wMusicBtn">♪ Off</button>
+      <button class="iconbtn" id="wLbBtn">Top 5</button>
+      <button class="iconbtn" id="wNightBtn">Nuit</button>
+    </div>
+  </div>
+
+  <div class="wplay hidden-el" id="wPlay">
+    <div class="wtheme" id="wTheme">—</div>
+    <div class="wtimer" id="wTimer">00:30</div>
+    <div class="wscore" id="wScore">0 mot trouvé</div>
+
+    <div class="scramble" id="wScramble"></div>
+
+    <input type="text" class="winput" id="wInput" autocomplete="off" autocorrect="off"
+           autocapitalize="off" spellcheck="false" placeholder="...">
+
+    <div class="wactions" id="wActions">
+      <button id="wPass">Passer (Ctrl)</button>
+      <button id="wQuit">Abandonner</button>
+    </div>
+
+    <div class="wfound" id="wFound"></div>
+  </div>
+
+  <div class="overlay" id="wOverlay">
+    <div class="msg" id="wOverlayMsg">Anagramme</div>
+    <div class="pct hidden-el" id="wOverlayScore"></div>
+    <div class="wmissed hidden-el" id="wMissed"></div>
+    <div class="wmenu" id="wMenu">
+      <button class="big" id="wDaily">★ Daily</button>
+      <button class="big ghost" id="wRandom">Random</button>
+    </div>
+    <button class="big hidden-el" id="wStart">Démarrer</button>
+  </div>
+
+  <div class="overlay hidden-el" id="wLbOverlay">
+    <div class="lb">
+      <h3>Meilleurs scores Daily — mots / 30s</h3>
+      <ol id="wLbList"></ol>
+    </div>
+    <button class="big" id="wLbClose">Fermer</button>
+  </div>
+</div>
+
+</div><!-- /slides -->
+
+<div class="navarrow" id="arrowRight">▶</div>
+<div class="navarrow" id="arrowLeft">◀</div>
+
+<div class="help" id="help">
+  <div class="hline"><b>Molette</b><br>changer de chiffre</div>
+  <div class="hline"><b>Clic gauche</b><br>placer / retirer</div>
+  <div class="hline"><b>Clic droit</b><br>note (4 max)</div>
+</div>
+<div class="credit">♪ Tangerine Prod.</div>
+
+<div class="help help-words">
+  <div class="hline"><b>Ctrl</b><br>pour passer</div>
+  <div class="hline">pas d'accent</div>
+  <div class="hline">pas de majuscule<br>ni minuscule</div>
+</div>
+<div class="credit credit-words">♪ Tangerine Prod.</div>
 
 <div class="cursor" id="cursor">1</div>
 
@@ -549,7 +713,6 @@
   function play(){
     state='playing'; hideStart(); runTimer();
     document.body.classList.add('playing');
-    cursor.style.display='block';
     document.getElementById('controls').classList.remove('hidden-el');
     showPad(true);
   }
@@ -568,15 +731,47 @@
     document.getElementById('controls').classList.remove('hidden-el');
     const pb=document.getElementById('pauseBtn');
     if(diff==='daily'){ pb.classList.add('hidden-el'); } else { pb.classList.remove('hidden-el'); }
-    const label = diff==='daily' ? 'Daily — '+dateKey() : 'Prêt ?';
-    showStart(label,'Démarrer');
+    if(diff==='daily'){
+      dailyGate();   // affiche connexion requise / déjà joué / prêt
+    } else {
+      showStart('Prêt ?','Démarrer');
+    }
+  }
+
+  // contrôle d'accès au Daily Sudoku
+  let dailyLocked=false;
+  async function dailyGate(){
+    dailyLocked=true;
+    if(!fbUser()){
+      showStart('Daily — connexion requise','Se connecter');
+      return;
+    }
+    showStart('Daily — '+dateKey(),'Vérification…');
+    let played=false;
+    try{ played = await window.SUDOKU_FB.hasPlayed('daily', dateKey()); }catch(_){}
+    if(played){
+      showStart('Daily déjà joué aujourd\'hui','Voir le classement');
+    } else {
+      dailyLocked=false;
+      showStart('Daily — '+dateKey(),'Démarrer');
+    }
   }
 
   startBtn.addEventListener('click',()=>{
+    // Daily terminé -> classement
+    if(diff==='daily' && state==='won' && dailyWon){ dailyWon=false; renderLeaderboard(); return; }
+    // Daily verrouillé (pas connecté ou déjà joué)
+    if(diff==='daily' && state==='idle' && dailyLocked){
+      if(!fbUser()){ if(window.SUDOKU_FB && window.SUDOKU_FB.signIn) window.SUDOKU_FB.signIn(); return; }
+      renderLeaderboard(); return;
+    }
     if(state==='won') { newGame(); play(); }
     else if(state==='idle') play();
     else if(state==='paused') play();
   });
+
+  // si l'utilisateur se connecte/déconnecte sur l'écran Daily, recalculer l'accès
+  window.addEventListener('sudoku-auth',()=>{ if(diff==='daily' && state==='idle') dailyGate(); });
 
   document.getElementById('pauseBtn').addEventListener('click',()=>{ if(state==='playing') pause(); else if(state==='paused') play(); });
   document.getElementById('newBtn').addEventListener('click',()=>{ newGame(); });
@@ -613,6 +808,10 @@
   // ---- curseur + molette ----
   const cursor=document.getElementById('cursor');
   document.addEventListener('mousemove',e=>{ cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
+  if(!isTouch){
+    board.addEventListener('mouseenter',()=>{ if(state==='playing') cursor.style.display='block'; });
+    board.addEventListener('mouseleave',()=>{ cursor.style.display='none'; });
+  }
   window.addEventListener('wheel',e=>{
     if(state!=='playing') return;
     e.preventDefault();
@@ -657,27 +856,16 @@
   function fbUser(){ return fbReady() ? window.SUDOKU_FB.user : null; }
 
   async function submitDaily(myTime){
-    const key='daily:'+dateKey();
     lastDailyTime=myTime;
-
-    if(fbUser()){
-      // classement partagé Firestore
-      let all=[];
-      try{ all=await window.SUDOKU_FB.top(dateKey()); }catch(_){ all=[]; }
-      const times=all.map(s=>s.time);
-      const pct=percentile(times, myTime);
-      try{ await window.SUDOKU_FB.submit(dateKey(), myTime, fbUser().displayName||'Anonyme'); }catch(_){}
-      showStart('Daily résolu — '+fmt(myTime), 'Voir le classement', 'Top '+pct+'% des joueurs');
-    } else {
-      // repli local
-      let scores=await loadScores(key);
-      const pct=percentile(scores, myTime);
-      scores.push(myTime);
-      scores=await saveScores(key,scores);
-      showStart('Daily résolu — '+fmt(myTime), 'Voir le classement', 'Top '+pct+'% des joueurs');
-    }
-    startBtn.onclick=()=>{ startBtn.onclick=null; renderLeaderboard(); };
+    let all=[];
+    try{ all=await window.SUDOKU_FB.top(dateKey()); }catch(_){ all=[]; }
+    const times=all.map(s=>s.time);
+    const pct=percentile(times, myTime);
+    try{ await window.SUDOKU_FB.submit(dateKey(), myTime, fbUser().displayName||'Anonyme'); }catch(_){}
+    showStart('Daily résolu — '+fmt(myTime), 'Voir le classement', 'Top '+pct+'% des joueurs');
+    dailyWon=true;
   }
+  let dailyWon=false;
 
   let lastDailyTime=null;
   async function renderLeaderboard(){
@@ -758,36 +946,357 @@
     if(fbReady()||++_fbTries>40) clearInterval(_fbPoll); // ~8s max
   },200);
 
-  // ---- musique : MP3 en boucle ----
-  let bgAudio=null, musicOn=false;
+  // ---- musique : MP3 en boucle, API globale partagée ----
   const volSlider=document.getElementById('volSlider');
   const volwrap=document.getElementById('volwrap');
   function curVol(){ return (parseInt(volSlider.value,10)||0)/100; }
-  function startMusic(){
-    if(!bgAudio){
-      bgAudio=new Audio('Tangerine_Prod.mp3');
-      bgAudio.loop=true;
-    }
-    bgAudio.volume=curVol();
-    bgAudio.play().catch(()=>{});
-    musicOn=true;
-    volwrap.classList.remove('hidden-el');
+  window.MUSIC = {
+    audio:null, on:false,
+    start(){
+      if(!this.audio){ this.audio=new Audio('Tangerine_Prod.mp3'); this.audio.loop=true; }
+      this.audio.volume=curVol();
+      this.audio.play().catch(()=>{});
+      this.on=true; volwrap.classList.remove('hidden-el'); syncMusicButtons();
+    },
+    stop(){ if(this.audio) this.audio.pause(); this.on=false; volwrap.classList.add('hidden-el'); syncMusicButtons(); },
+    toggle(){ this.on ? this.stop() : this.start(); },
+    setVol(v){ if(this.audio) this.audio.volume=v; }
+  };
+  function syncMusicButtons(){
+    const on=window.MUSIC.on;
+    ['musicBtn','wMusicBtn'].forEach(id=>{
+      const b=document.getElementById(id);
+      if(b){ b.textContent = on?'♪ On':'♪ Off'; b.classList.toggle('on',on); }
+    });
   }
-  function stopMusic(){
-    if(bgAudio) bgAudio.pause();
-    musicOn=false;
-    volwrap.classList.add('hidden-el');
-  }
-  volSlider.addEventListener('input',()=>{ if(bgAudio) bgAudio.volume=curVol(); });
-  document.getElementById('musicBtn').addEventListener('click',function(){
-    if(musicOn){ stopMusic(); this.textContent='♪ Off'; this.classList.remove('on'); }
-    else { startMusic(); this.textContent='♪ On'; this.classList.add('on'); }
-  });
+  window.syncMusicButtons = syncMusicButtons;
+  volSlider.addEventListener('input',()=>window.MUSIC.setVol(curVol()));
+  document.getElementById('musicBtn').addEventListener('click',()=>window.MUSIC.toggle());
+
+  // exposé pour réinitialiser le Sudoku quand on quitte sa fenêtre
+  window.resetSudoku = function(){
+    if(state==='playing' || state==='paused'){ newGame(); }
+  };
 
   build();
   newGame();
 })();
 </script>
+
+<script>
+(function(){
+  // ===== banque de mots (16 thèmes × 20) =====
+  const WORDBANK = {
+    "ANIMAUX": ["chat","chien","cheval","lapin","tigre","lion","souris","renard","loutre","dauphin","requin","tortue","abeille","papillon","ecureuil","hibou","pingouin","girafe","elephant","crocodile"],
+    "FRUITS & LEGUMES": ["pomme","banane","cerise","fraise","orange","citron","peche","ananas","carotte","tomate","oignon","poireau","courgette","aubergine","epinard","radis","navet","brocoli","haricot","salade"],
+    "PAYS": ["france","espagne","italie","portugal","belgique","allemagne","suisse","canada","japon","chine","bresil","mexique","maroc","egypte","grece","russie","inde","argentine","australie","norvege"],
+    "VILLES": ["paris","londres","madrid","rome","berlin","tokyo","moscou","lisbonne","geneve","bruxelles","montreal","marseille","lyon","bordeaux","nantes","vienne","athenes","dublin","oslo","prague"],
+    "CORPS HUMAIN": ["main","pied","tete","jambe","bras","coude","genou","epaule","cheville","poignet","doigt","oreille","bouche","langue","dent","cerveau","poumon","estomac","talon","nuque"],
+    "SPORTS": ["football","tennis","rugby","basket","handball","natation","cyclisme","boxe","judo","karate","escrime","golf","ski","surf","voile","aviron","athletisme","volley","hockey","equitation"],
+    "METIERS": ["medecin","avocat","boulanger","plombier","cuisinier","pompier","facteur","jardinier","peintre","coiffeur","menuisier","libraire","pilote","infirmier","professeur","architecte","journaliste","comptable","serveur","mecanicien"],
+    "NOURRITURE": ["pain","fromage","jambon","pizza","pates","riz","soupe","gateau","crepe","omelette","saucisse","yaourt","beurre","confiture","chocolat","biscuit","sandwich","salade","poulet","poisson"],
+    "NATURE": ["arbre","fleur","foret","riviere","montagne","ocean","plage","desert","volcan","cascade","prairie","colline","falaise","nuage","orage","tempete","etoile","ruisseau","clairiere","banquise"],
+    "MAISON": ["cuisine","salon","chambre","jardin","garage","grenier","cave","escalier","fenetre","balcon","canape","fauteuil","armoire","etagere","tiroir","placard","matelas","rideau","tapis","lampe"],
+    "TRANSPORTS": ["voiture","velo","train","avion","bateau","bus","metro","tramway","camion","moto","scooter","helicoptere","fusee","trottinette","ambulance","taxi","ferry","montgolfiere","paquebot","fourgon"],
+    "MUSIQUE": ["guitare","piano","violon","batterie","trompette","flute","saxophone","harpe","accordeon","clarinette","melodie","rythme","chanson","concert","orchestre","refrain","partition","micro","ampli","tambour"],
+    "COULEURS": ["rouge","bleu","vert","jaune","orange","violet","rose","marron","gris","noir","blanc","turquoise","beige","pourpre","indigo","cyan","corail","ocre","ivoire","ecarlate"],
+    "JEUX VIDEO": ["mario","zelda","tetris","minecraft","fortnite","pokemon","sonic","pacman","fifa","kirby","metroid","halo","overwatch","valorant","starcraft","skyrim","fallout","portal","doom","sims"],
+    "FILMS": ["titanic","avatar","gladiator","matrix","inception","jaws","alien","rocky","joker","frozen","shrek","cars","coco","amelie","intouchables","interstellar","gravity","dune","ratatouille","up"],
+    "SERIES": ["friends","lost","dexter","sherlock","narcos","vikings","fargo","westworld","loki","mandalorian","heroes","prisonbreak","mentalist","columbo","kaamelott","engrenages","peakyblinders","succession","ozark","euphoria"],
+    "INSTRUMENTS": ["guitare","piano","violon","batterie","trompette","flute","saxophone","harpe","accordeon","clarinette","violoncelle","contrebasse","tambourin","xylophone","cornemuse","banjo","ukulele","triangle","castagnettes","orgue"],
+    "VETEMENTS": ["pantalon","chemise","veste","manteau","echarpe","gant","chapeau","chaussette","pull","jupe","robe","cravate","ceinture","short","bonnet","casquette","sandale","botte","gilet","pyjama"],
+    "OUTILS": ["marteau","tournevis","pince","scie","perceuse","cle","niveau","rabot","truelle","pelle","rateau","secateur","cisaille","burin","etau","lime","equerre","brouette","echelle","ponceuse"],
+    "BOISSONS": ["eau","cafe","the","jus","limonade","biere","vin","cidre","champagne","whisky","vodka","rhum","cacao","sirop","smoothie","tisane","soda","grenadine","cocktail","liqueur"],
+    "FLEURS": ["rose","tulipe","marguerite","tournesol","lys","orchidee","pivoine","jonquille","muguet","violette","oeillet","jasmin","lavande","coquelicot","iris","glaieul","camelia","dahlia","bleuet","mimosa"],
+    "ARBRES": ["chene","sapin","bouleau","erable","peuplier","saule","platane","frene","hetre","noyer","chataignier","cypres","cedre","olivier","palmier","pommier","cerisier","tilleul","merisier","figuier"],
+    "MEUBLES": ["table","chaise","canape","lit","armoire","bureau","etagere","commode","fauteuil","buffet","tabouret","bibliotheque","placard","coiffeuse","banc","berceau","vitrine","pupitre","comptoir","penderie"],
+    "ECOLE": ["cahier","stylo","crayon","gomme","regle","trousse","cartable","tableau","craie","classeur","feutre","compas","ciseaux","colle","agenda","manuel","cours","examen","recreation","pupitre"],
+    "PLANETES": ["mercure","venus","terre","mars","jupiter","saturne","uranus","neptune","pluton","soleil","lune","comete","asteroide","galaxie","etoile","meteore","nebuleuse","orbite","cosmos","univers"],
+    "OISEAUX": ["aigle","moineau","corbeau","pigeon","mouette","cygne","canard","perroquet","colibri","autruche","faucon","chouette","merle","pinson","rougegorge","mesange","heron","flamant","toucan","paon"],
+    "INSECTES": ["abeille","fourmi","mouche","moustique","araignee","papillon","coccinelle","libellule","sauterelle","scarabee","guepe","frelon","cigale","puce","mante","luciole","chenille","termite","criquet","pou"],
+    "POISSONS": ["saumon","thon","truite","sardine","morue","cabillaud","maquereau","anchois","carpe","brochet","perche","sole","raie","anguille","espadon","merlu","dorade","bar","hareng","turbot"],
+    "EMOTIONS": ["joie","tristesse","colere","peur","amour","haine","jalousie","surprise","degout","honte","fierte","ennui","angoisse","espoir","nostalgie","gratitude","mepris","tendresse","excitation","serenite"],
+    "DESSERTS": ["gateau","tarte","glace","mousse","flan","creme","beignet","gaufre","macaron","eclair","tiramisu","clafoutis","cookie","brownie","pudding","sorbet","meringue","cannele","madeleine","profiterole"],
+    "BATIMENTS": ["maison","immeuble","chateau","eglise","cathedrale","tour","gratteciel","grange","cabane","villa","hopital","ecole","mairie","musee","theatre","stade","gare","aeroport","usine","phare"],
+    "MYTHOLOGIE": ["zeus","hera","apollon","athena","poseidon","hades","ares","hermes","aphrodite","artemis","hercule","medusa","cyclope","minotaure","pegase","sphinx","hydre","titan","cerbere","centaure"],
+    "ESPACE": ["fusee","satellite","navette","astronaute","telescope","orbite","gravite","cosmos","galaxie","nebuleuse","trounoir","comete","meteorite","station","sonde","atterrissage","decollage","apesanteur","constellation","supernova"],
+    "CINEMA": ["acteur","realisateur","scenario","camera","ecran","projecteur","tournage","montage","figurant","cascade","decor","costume","oscar","festival","premiere","bandeannonce","generique","plateau","clap","studio"],
+    "INFORMATIQUE": ["ordinateur","clavier","souris","ecran","internet","logiciel","fichier","dossier","serveur","reseau","programme","navigateur","virus","memoire","processeur","disque","pixel","octet","cookie","application"],
+    "DANSE": ["valse","tango","salsa","rumba","flamenco","ballet","hiphop","breakdance","claquettes","quadrille","menuet","polka","mambo","charleston","twist","disco","zumba","capoeira","sirtaki","bachata"],
+  };
+  const THEMES = Object.keys(WORDBANK);
+
+  // ===== normalisation (sans accents, sans majuscules, oe -> oe) =====
+  function norm(s){
+    return s.toLowerCase()
+      .replace(/œ/g,'oe').replace(/æ/g,'ae')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z]/g,'');
+  }
+
+  function shuffleArr(a, rnd){ rnd=rnd||Math.random; a=a.slice(); for(let i=a.length-1;i>0;i--){const j=(rnd()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+  function scramble(word, rnd){
+    const letters=word.split('');
+    let out=word;
+    for(let tries=0; tries<20 && norm(out)===norm(word); tries++){
+      out=shuffleArr(letters, rnd).join('');
+    }
+    return out;
+  }
+
+  // PRNG seedable (identique au Sudoku) pour le Daily
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  function dateKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+
+  // ===== état =====
+  const DURATION=30;
+  let wState='idle'; // idle | playing | over
+  let wTimeLeft=DURATION, wInt=null;
+  let theme='', pool=[], poolIdx=0, current='', answerWord='', found=[], missed=[];
+  let wMode='daily'; // 'daily' (comptabilisé) | 'random' (libre)
+  let wRng=Math.random;
+
+  const el=id=>document.getElementById(id);
+  const wTheme=el('wTheme'), wTimer=el('wTimer'), wScore=el('wScore'),
+        wScramble=el('wScramble'), wInput=el('wInput'), wFound=el('wFound'),
+        wOverlay=el('wOverlay'), wOverlayMsg=el('wOverlayMsg'), wOverlayScore=el('wOverlayScore'),
+        wStart=el('wStart'), wPlay=el('wPlay');
+
+  function renderScramble(){
+    wScramble.innerHTML='';
+    for(const ch of current){
+      const t=document.createElement('div'); t.className='stile'; t.textContent=ch;
+      wScramble.appendChild(t);
+    }
+  }
+  function nextWord(){
+    if(poolIdx>=pool.length){ pool=shuffleArr(WORDBANK[theme], wRng); poolIdx=0; }
+    answerWord=pool[poolIdx++];
+    current=scramble(answerWord, wRng);
+    wInput.value='';
+    renderScramble();
+  }
+  function updateScore(){
+    const n=found.length;
+    wScore.textContent = n+' mot'+(n>1?'s':'')+' trouvé'+(n>1?'s':'');
+    wFound.textContent = found.join(' · ');
+  }
+
+  function startGame(mode){
+    wMode = mode || 'daily';
+    if(wMode==='daily'){
+      // thème + ordre des mots seedés par la date : identiques pour tous, change chaque jour
+      wRng = mulberry32(hashStr('anagramme-'+dateKey()));
+      theme = THEMES[(wRng()*THEMES.length)|0];
+      pool = shuffleArr(WORDBANK[theme], wRng);
+    } else {
+      wRng = Math.random;
+      theme = THEMES[(Math.random()*THEMES.length)|0];
+      pool = shuffleArr(WORDBANK[theme]);
+    }
+    wTheme.textContent = theme + (wMode==='random' ? ' · libre' : '');
+    poolIdx=0; found=[]; missed=[];
+    wTimeLeft=DURATION; wState='playing';
+    wTimer.textContent='00:'+String(DURATION).padStart(2,'0');
+    updateScore();
+    wOverlay.classList.add('hidden-el');
+    el('wLbOverlay').classList.add('hidden-el');
+    wPlay.classList.remove('hidden-el');   // afficher l'interface SEULEMENT maintenant
+    nextWord();
+    wInput.disabled=false; wInput.focus();
+    clearInterval(wInt);
+    wInt=setInterval(()=>{
+      wTimeLeft--;
+      wTimer.textContent='00:'+String(Math.max(wTimeLeft,0)).padStart(2,'0');
+      if(wTimeLeft<=0) endGame();
+    },1000);
+  }
+
+  function checkInput(){
+    if(wState!=='playing') return;
+    const guess=norm(wInput.value);
+    if(!guess) return;
+    if(guess===norm(answerWord)){
+      found.push(answerWord);
+      updateScore();
+      wInput.classList.add('flash-ok');
+      setTimeout(()=>wInput.classList.remove('flash-ok'),180);
+      nextWord();
+    }
+  }
+  function passWord(){
+    if(wState==='playing'){
+      if(answerWord && missed.indexOf(answerWord)<0) missed.push(answerWord);
+      nextWord(); wInput.focus();
+    }
+  }
+
+  async function endGame(){
+    clearInterval(wInt); wState='over';
+    wInput.disabled=true;
+    // le mot affiché au moment où le temps s'écoule compte comme raté
+    if(answerWord && found.indexOf(answerWord)<0 && missed.indexOf(answerWord)<0) missed.push(answerWord);
+    const score=found.length;
+    if(wMode==='daily'){ await submitWordScore(score); }   // seul le Daily compte
+    wPlay.classList.add('hidden-el');                       // cacher l'interface de jeu
+    const suffix = wMode==='daily' ? '' : ' (partie libre, non classée)';
+    wOverlayMsg.textContent='Temps écoulé'+suffix;
+    wOverlayScore.textContent=score+' mot'+(score>1?'s':'')+' en 30s';
+    wOverlayScore.classList.remove('hidden-el');
+    // afficher les mots ratés
+    const missedBox=el('wMissed');
+    if(missed.length){
+      missedBox.innerHTML='<span class="ml">Mots manqués :</span> '+missed.join(' · ');
+      missedBox.classList.remove('hidden-el');
+    } else { missedBox.classList.add('hidden-el'); }
+    el('wMenu').classList.remove('hidden-el');               // re-proposer Daily / Random
+    wStart.classList.add('hidden-el');
+    wOverlay.classList.remove('hidden-el');
+  }
+
+  // ===== saisie =====
+  wInput.addEventListener('input',checkInput);
+  wInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ e.preventDefault(); checkInput(); }
+    else if(e.key==='Control'){ e.preventDefault(); passWord(); }
+  });
+  el('wPass').addEventListener('click',passWord);
+  el('wQuit').addEventListener('click',()=>{ if(wState==='playing') endGame(); });
+  el('wRandom').addEventListener('click',()=>startGame('random'));
+  el('wDaily').addEventListener('click',()=>tryDaily());
+
+  // ===== classement / Daily (Firestore) =====
+  function fbReady(){ return window.SUDOKU_FB && window.SUDOKU_FB.enabled; }
+  function fbUser(){ return fbReady() ? window.SUDOKU_FB.user : null; }
+
+  async function tryDaily(){
+    if(!fbUser()){
+      wOverlayMsg.textContent='Daily — connexion requise';
+      if(window.SUDOKU_FB && window.SUDOKU_FB.signIn) window.SUDOKU_FB.signIn();
+      return;
+    }
+    wOverlayMsg.textContent='Vérification…';
+    let played=false;
+    try{ played = await window.SUDOKU_FB.hasPlayed('anagramme', dateKey()); }catch(_){}
+    if(played){
+      wOverlayMsg.textContent='Daily déjà joué aujourd\'hui';
+      renderWordLb();
+      return;
+    }
+    startGame('daily');
+  }
+
+  async function submitWordScore(score){
+    // seul le Daily appelle ceci ; nécessite une connexion
+    if(fbUser() && window.SUDOKU_FB.submitWord){
+      try{ await window.SUDOKU_FB.submitWord(dateKey(), score, fbUser().displayName||'Anonyme'); }catch(_){}
+    }
+  }
+  async function renderWordLb(){
+    const list=el('wLbList'); list.innerHTML='';
+    let rows=[];
+    if(fbUser() && window.SUDOKU_FB.topWord){
+      let all=[]; try{ all=await window.SUDOKU_FB.topWord(dateKey()); }catch(_){ all=[]; }
+      rows=all.map(s=>({score:s.score,name:s.name||'Anonyme'})).sort((a,b)=>b.score-a.score);
+    }
+    if(!rows.length){
+      const li=document.createElement('li'); li.className='empty';
+      li.textContent= fbUser()?'Aucun score aujourd\'hui.':'Connecte-toi pour voir le classement.';
+      list.appendChild(li);
+    } else {
+      rows.slice(0,5).forEach((r,i)=>{
+        const li=document.createElement('li');
+        li.innerHTML='<span class="rank">'+(i+1)+'</span><span>'+(r.name? r.name+' · ':'')+r.score+' mots</span>';
+        list.appendChild(li);
+      });
+    }
+    wOverlay.classList.add('hidden-el');
+    el('wLbOverlay').classList.remove('hidden-el');
+  }
+  function showMenu(){
+    wPlay.classList.add('hidden-el');
+    el('wLbOverlay').classList.add('hidden-el');
+    el('wMissed').classList.add('hidden-el');
+    wOverlayMsg.textContent='Anagramme';
+    wOverlayScore.classList.add('hidden-el');
+    el('wMenu').classList.remove('hidden-el');
+    wStart.classList.add('hidden-el');
+    wOverlay.classList.remove('hidden-el');
+  }
+
+  el('wLbClose').addEventListener('click',()=>{
+    el('wLbOverlay').classList.add('hidden-el');
+    if(wState==='over'){
+      el('wMenu').classList.remove('hidden-el');
+      wStart.classList.add('hidden-el');
+      wOverlayMsg.textContent='Temps écoulé';
+      wOverlayScore.textContent=found.length+' mot'+(found.length>1?'s':'')+' en 30s';
+      wOverlayScore.classList.remove('hidden-el');
+    } else {
+      showMenu();
+    }
+    wOverlay.classList.remove('hidden-el');
+  });
+  el('wLbBtn').addEventListener('click',()=>{ if(wState!=='playing') renderWordLb(); });
+  el('wMusicBtn').addEventListener('click',()=>{ if(window.MUSIC){ window.MUSIC.toggle(); } });
+  el('wNightBtn').addEventListener('click',()=>{
+    document.body.classList.toggle('night');
+    const n=document.body.classList.contains('night');
+    el('wNightBtn').textContent=n?'Jour':'Nuit';
+    const nb=document.getElementById('nightBtn'); if(nb) nb.textContent=n?'Jour':'Nuit';
+  });
+
+  // ===== navigation slides + flèches =====
+  const slides=el('slides'), arrowR=el('arrowRight'), arrowL=el('arrowLeft');
+  let onWords=false;
+
+  function resetWords(){
+    // annule toute partie d'Anagramme en cours et revient au menu
+    clearInterval(wInt);
+    wState='idle'; found=[]; answerWord='';
+    wInput.value=''; wInput.disabled=true;
+    wScramble.innerHTML='';
+    wTheme.textContent='—';
+    wTimer.textContent='00:'+String(DURATION).padStart(2,'0');
+    updateScore();
+    showMenu();
+  }
+
+  function goWords(){
+    if(window.resetSudoku) window.resetSudoku();   // annule la partie Sudoku en cours
+    slides.classList.add('show-words'); document.body.classList.add('on-words'); onWords=true;
+    updateArrows(); if(window.syncMusicButtons) window.syncMusicButtons();
+  }
+  function goSudoku(){
+    resetWords();                                  // annule la partie Anagramme en cours
+    slides.classList.remove('show-words'); document.body.classList.remove('on-words'); onWords=false;
+    updateArrows(); if(window.syncMusicButtons) window.syncMusicButtons();
+  }
+  function updateArrows(){
+    arrowR.classList.toggle('visible', !onWords);
+    arrowL.classList.toggle('visible', onWords);
+  }
+  arrowR.addEventListener('click',goWords);
+  arrowL.addEventListener('click',goSudoku);
+
+  // sur desktop : la flèche apparaît quand la souris approche du bord
+  if(!('ontouchstart' in window) && navigator.maxTouchPoints===0){
+    document.addEventListener('mousemove',e=>{
+      const w=window.innerWidth;
+      if(!onWords && e.clientX > w-60) arrowR.classList.add('visible');
+      else if(!onWords && e.clientX < w-160) arrowR.classList.remove('visible');
+      if(onWords && e.clientX < 60) arrowL.classList.add('visible');
+      else if(onWords && e.clientX > 160) arrowL.classList.remove('visible');
+    });
+  } else {
+    updateArrows(); // sur mobile, flèches toujours visibles
+  }
+
+  showMenu(); // écran d'accueil Anagramme : menu Daily / Random
+})();
+</script>
+
 <script type="module">
   // ============================================================
   //  CONFIG FIREBASE — remplace par TES clés (console Firebase)
@@ -811,7 +1320,7 @@
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } =
       await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-    const { getFirestore, collection, doc, setDoc, getDocs, query, orderBy, limit } =
+    const { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, limit } =
       await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
 
     const app = initializeApp(firebaseConfig);
@@ -823,16 +1332,38 @@
       enabled: true, auth, db, user: null,
       signIn: () => signInWithPopup(auth, provider),
       signOut: () => signOut(auth),
-      // écrit le meilleur temps du joueur pour la grille du jour
-      submit: async (dateKey, time, name) => {
-        const ref = doc(db, "daily", dateKey, "scores", auth.currentUser.uid);
+      // SUDOKU DAILY : une seule soumission par jour (pas d'écrasement)
+      submit: async (dayKey, time, name) => {
+        const ref = doc(db, "daily", dayKey, "scores", auth.currentUser.uid);
+        const s = await getDoc(ref);
+        if (s.exists()) return false;                 // déjà joué aujourd'hui
         await setDoc(ref, { time, name, ts: Date.now() }, { merge: false });
+        return true;
       },
-      // récupère tous les scores du jour, triés
-      top: async (dateKey) => {
-        const q = query(collection(db, "daily", dateKey, "scores"), orderBy("time", "asc"), limit(200));
+      top: async (dayKey) => {
+        const q = query(collection(db, "daily", dayKey, "scores"), orderBy("time", "asc"), limit(200));
         const snap = await getDocs(q);
         return snap.docs.map(d => d.data());
+      },
+      // ANAGRAMME DAILY : classement par jour, une seule soumission par jour
+      submitWord: async (dayKey, score, name) => {
+        const ref = doc(db, "anagramme", dayKey, "scores", auth.currentUser.uid);
+        const s = await getDoc(ref);
+        if (s.exists()) return false;
+        await setDoc(ref, { score, name, ts: Date.now() }, { merge: false });
+        return true;
+      },
+      topWord: async (dayKey) => {
+        const q = query(collection(db, "anagramme", dayKey, "scores"), orderBy("score", "desc"), limit(200));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => d.data());
+      },
+      // verrou « déjà joué aujourd'hui » : game = 'daily' (sudoku) ou 'anagramme'
+      hasPlayed: async (game, dayKey) => {
+        if (!auth.currentUser) return false;
+        const ref = doc(db, game, dayKey, "scores", auth.currentUser.uid);
+        const s = await getDoc(ref);
+        return s.exists();
       }
     };
     onAuthStateChanged(auth, (u) => {
