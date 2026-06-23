@@ -243,20 +243,20 @@
     .numpad { display: none !important; }
   }
 
-  /* ===== système de slides (2 jeux) ===== */
+  /* ===== système de slides (4 fenêtres) ===== */
   .slides {
-    position: fixed; inset: 0; width: 200vw; z-index: 1;
+    position: fixed; inset: 0; width: 400vw; z-index: 1;
     display: flex;
     transition: transform .5s cubic-bezier(.6,.05,.3,1);
+    transform: translateX(0);
   }
-  .slides.show-words { transform: translateX(-100vw); }
   .slide {
     width: 100vw; height: 100vh; overflow-y: auto; position: relative;
     display: flex; flex-direction: column; align-items: center;
     padding: 20px 16px 40px;
   }
 
-  /* flèches de navigation entre jeux */
+  /* flèches de navigation entre fenêtres */
   .navarrow {
     position: fixed; top: 50%; transform: translateY(-50%);
     width: 46px; height: 70px; z-index: 70;
@@ -270,16 +270,19 @@
   #arrowRight { right: 0; border-right: none; }
   #arrowLeft { left: 0; border-left: none; }
 
-  body.on-words .topbtns, body.on-words .gearbtn { display: none !important; }
+  /* barre d'options Sudoku visible seulement sur la fenêtre Sudoku */
+  body:not(.view-sudoku) .topbtns, body:not(.view-sudoku) .gearbtn { display: none !important; }
   /* instructions/crédit : chacun sur sa fenêtre */
-  .help-words, .credit-words { display: none; }
-  body.on-words #help, body.on-words .credit:not(.credit-words) { display: none !important; }
-  body.on-words .help-words { display: flex; }
-  body.on-words .credit-words { display: block; }
+  .help-words, .credit-words, .help-motus, .credit-motus { display: none; }
+  body:not(.view-sudoku) #help, body:not(.view-sudoku) .credit:not(.credit-words):not(.credit-motus) { display: none !important; }
+  body.view-anagramme .help-words { display: flex; }
+  body.view-anagramme .credit-words { display: block; }
+  body.view-motus .help-motus { display: flex; }
+  body.view-motus .credit-motus { display: block; }
   .wtopbtns {
     position: fixed; top: 16px; right: 16px; display: none; gap: 8px; z-index: 50;
   }
-  body.on-words .wtopbtns { display: flex; }
+  body.view-anagramme .wtopbtns { display: flex; }
 
   .wmenu { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   .wmissed {
@@ -343,6 +346,83 @@
     .winput { font-size: 22px; }
     .wtimer { font-size: 44px; }
     .navarrow { opacity: .9; pointer-events: auto; height: 56px; width: 38px; }
+  }
+
+  /* ===== Motus ===== */
+  .mtopbtns, .rtopbtns {
+    position: fixed; top: 16px; right: 16px; display: none; gap: 8px; z-index: 50;
+  }
+  body.view-motus .mtopbtns { display: flex; }
+  body.view-ranking .rtopbtns { display: flex; }
+
+  .mwordcount {
+    font-size: 12px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 4px; min-height: 16px;
+  }
+  .mtimer {
+    font-size: 56px; font-weight: 900; font-variant-numeric: tabular-nums;
+    line-height: 1; margin-bottom: 18px; color: var(--accent);
+  }
+  .mgrid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 22px; }
+  .mrow { display: flex; gap: 6px; }
+  .mrow.shake { animation: mshake .35s; }
+  @keyframes mshake {
+    0%,100%{ transform: translateX(0); }
+    20%,60%{ transform: translateX(-7px); }
+    40%,80%{ transform: translateX(7px); }
+  }
+  .mtile {
+    width: 54px; height: 54px; display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; text-transform: uppercase;
+    border: 3px solid var(--line-thick); background: var(--panel); color: var(--ink);
+  }
+  .mtile.filled { border-color: var(--ink); }
+  .mtile.ok   { background: #c2452e; color: #fff; border-color: #c2452e; }   /* bien placé */
+  .mtile.mis  { color: #fff; border-color: #c98a2b; background: #c98a2b; border-radius: 50%; } /* mal placé (rond) */
+  .mtile.no   { background: var(--line-thin); color: var(--bg); border-color: var(--line-thin); } /* absent */
+
+  .mmsg {
+    font-size: 12px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin: -12px 0 14px; min-height: 16px; text-align: center;
+  }
+
+  .mkeyboard { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .mkrow { display: flex; gap: 5px; }
+  .mkey {
+    min-width: 30px; height: 44px; padding: 0 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit; font-weight: 900; font-size: 15px; text-transform: uppercase;
+    background: var(--panel); border: 2px solid var(--line-thick); color: var(--ink);
+    cursor: pointer; user-select: none;
+  }
+  .mkey.wide { min-width: 58px; font-size: 11px; letter-spacing: 0.05em; }
+  .mkey.ok { background: #c2452e; color:#fff; border-color:#c2452e; }
+  .mkey.mis { background: #c98a2b; color:#fff; border-color:#c98a2b; }
+  .mkey.no { background: var(--line-thin); color: var(--bg); border-color: var(--line-thin); }
+
+  /* ===== classement général ===== */
+  .rwrap { width: 100%; max-width: 960px; margin-top: 20px; }
+  .rsub { text-align: center; font-size: 12px; font-weight: 900; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 24px; }
+  .rcols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .rcard { border: 2px solid var(--line-thick); padding: 16px; }
+  .rcard h3 { font-size: 14px; letter-spacing: 0.14em; margin-bottom: 4px; }
+  .rcard .rmetric { font-size: 10px; font-weight: 900; letter-spacing: 0.08em;
+    text-transform: uppercase; opacity: .5; margin-bottom: 12px; }
+  .rcard ol { list-style: none; }
+  .rcard li { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums;
+    font-weight: 900; font-size: 15px; padding: 6px 0; border-bottom: 2px solid var(--line-thin); }
+  .rcard li .rank { color: var(--accent); width: 24px; }
+  .rcard .empty { font-size: 11px; opacity: .55; font-weight: 900; letter-spacing: 0.08em; padding: 6px 0; }
+
+  @media (max-width: 700px) {
+    .rcols { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .mtile { width: 40px; height: 40px; font-size: 20px; }
+    .mtimer { font-size: 42px; }
+    .mkey { min-width: 26px; height: 40px; font-size: 13px; padding: 0 5px; }
+    .mkey.wide { min-width: 48px; }
   }
 </style>
 </head>
@@ -464,6 +544,54 @@
   </div>
 </div>
 
+<div class="slide" id="slideMotus">
+  <div class="topbar"><h1>MOTUS</h1>
+    <div class="mtopbtns">
+      <button class="iconbtn" id="mMusicBtn">♪ Off</button>
+      <button class="iconbtn" id="mLbBtn">Top 5</button>
+      <button class="iconbtn" id="mNightBtn">Nuit</button>
+    </div>
+  </div>
+
+  <div class="mplay hidden-el" id="mPlay">
+    <div class="mwordcount" id="mWordCount"></div>
+    <div class="mtimer" id="mTimer">00:00</div>
+    <div class="mgrid" id="mGrid"></div>
+    <div class="mmsg hidden-el" id="mMsg"></div>
+    <div class="mkeyboard" id="mKeyboard"></div>
+  </div>
+
+  <div class="overlay" id="mOverlay">
+    <div class="msg" id="mOverlayMsg">Motus</div>
+    <div class="pct hidden-el" id="mOverlayScore"></div>
+    <div class="wmissed hidden-el" id="mReveal"></div>
+    <div class="wmenu" id="mMenu">
+      <button class="big" id="mDaily">★ Daily</button>
+      <button class="big ghost" id="mRandom">Random</button>
+    </div>
+  </div>
+
+  <div class="overlay hidden-el" id="mLbOverlay">
+    <div class="lb">
+      <h3>Meilleurs temps Daily — 3 mots</h3>
+      <ol id="mLbList"></ol>
+    </div>
+    <button class="big" id="mLbClose">Fermer</button>
+  </div>
+</div>
+
+<div class="slide" id="slideRanking">
+  <div class="topbar"><h1>CLASSEMENT</h1>
+    <div class="rtopbtns">
+      <button class="iconbtn" id="rNightBtn">Nuit</button>
+    </div>
+  </div>
+  <div class="rwrap" id="rWrap">
+    <div class="rsub" id="rDate">—</div>
+    <div class="rcols" id="rCols"></div>
+  </div>
+</div>
+
 </div><!-- /slides -->
 
 <div class="navarrow" id="arrowRight">▶</div>
@@ -482,6 +610,13 @@
   <div class="hline">pas de majuscule<br>ni minuscule</div>
 </div>
 <div class="credit credit-words">♪ Tangerine Prod.</div>
+
+<div class="help help-motus">
+  <div class="hline"><b>Entrée</b><br>valider le mot</div>
+  <div class="hline">pas d'accent</div>
+  <div class="hline">pas de majuscule<br>ni minuscule</div>
+</div>
+<div class="credit credit-motus">♪ Tangerine Prod.</div>
 
 <div class="cursor" id="cursor">1</div>
 
@@ -1247,14 +1382,10 @@
     const nb=document.getElementById('nightBtn'); if(nb) nb.textContent=n?'Jour':'Nuit';
   });
 
-  // ===== navigation slides + flèches =====
-  const slides=el('slides'), arrowR=el('arrowRight'), arrowL=el('arrowLeft');
-  let onWords=false;
-
+  // ===== navigation : déléguée au contrôleur global (défini dans le script Motus) =====
   function resetWords(){
-    // annule toute partie d'Anagramme en cours et revient au menu
     clearInterval(wInt);
-    wState='idle'; found=[]; answerWord='';
+    wState='idle'; found=[]; missed=[]; answerWord='';
     wInput.value=''; wInput.disabled=true;
     wScramble.innerHTML='';
     wTheme.textContent='—';
@@ -1262,38 +1393,397 @@
     updateScore();
     showMenu();
   }
+  window.resetWords = resetWords;
+  window.anagrammeEnter = ()=>{ if(window.syncMusicButtons) window.syncMusicButtons(); };
 
-  function goWords(){
-    if(window.resetSudoku) window.resetSudoku();   // annule la partie Sudoku en cours
-    slides.classList.add('show-words'); document.body.classList.add('on-words'); onWords=true;
-    updateArrows(); if(window.syncMusicButtons) window.syncMusicButtons();
-  }
-  function goSudoku(){
-    resetWords();                                  // annule la partie Anagramme en cours
-    slides.classList.remove('show-words'); document.body.classList.remove('on-words'); onWords=false;
-    updateArrows(); if(window.syncMusicButtons) window.syncMusicButtons();
-  }
-  function updateArrows(){
-    arrowR.classList.toggle('visible', !onWords);
-    arrowL.classList.toggle('visible', onWords);
-  }
-  arrowR.addEventListener('click',goWords);
-  arrowL.addEventListener('click',goSudoku);
+  el('wRandom'); // (les listeners Daily/Random sont déjà posés plus haut)
 
-  // sur desktop : la flèche apparaît quand la souris approche du bord
+  showMenu(); // écran d'accueil Anagramme : menu Daily / Random
+})();
+</script>
+
+
+<script>
+(function(){
+  const MOTUS_WORDS = ["cigare", "menthe", "mousse", "nomade", "paille", "papier", "parole", "poivre", "poutre", "propre", "rideau", "rigole", "ruelle", "sieste", "soleil", "tortue", "trefle", "tresor", "tulipe", "valise", "vapeur", "viande", "virage", "visage", "voisin", "abimer", "acteur", "agneau", "amande", "amener", "amical", "ananas", "ancien", "animal", "argent", "arrose", "aspect", "auteur", "avenir", "avocat", "bagage", "baiser", "balcon", "bambou", "bandit", "baobab", "barque", "bassin", "bateau", "bercer", "beurre", "blason", "bonbon", "bouton", "brebis", "bronze", "bureau", "cabine", "cactus", "cadeau", "cadran", "calcul", "camion", "canard", "canine", "canton", "carnet", "carton", "casier", "castor", "cerise", "cesser", "chaine", "chaise", "chance", "chaque", "charme", "chasse", "chaton", "cheval", "choeur", "cinema", "citron", "classe", "client", "cloche", "clouer", "cobaye", "cocher", "colere", "combat", "comete", "compas", "confit", "corail", "couper", "crabes", "cravate", "crayon", "creuse", "crocus", "cuisse", "danois", "debris", "defaut", "degats", "delice", "depart", "dessin", "detour", "devise", "diable", "dindon", "dingue", "direct", "disque", "docteur", "donjon", "dorade", "double", "dragon", "ecorce", "ecrire", "effort", "eglise", "elixir", "empire", "emploi", "enfant", "enigme", "entree", "epaule", "escale", "espace", "espoir", "etoile", "etoffe", "etrier", "examen", "facade", "faible", "fameux", "faucon", "fermer", "festin", "figure", "filtre", "finale", "flacon", "flamme", "fleche", "floral", "flotte", "forage", "forban", "forets", "format", "fougue", "fourmi", "fracas", "frange", "frites", "fromage", "fumier", "fureur", "galant", "garage", "garcon", "gateau", "gazole", "geante", "gelule", "girafe", "givrer", "glaive", "gorges", "goutte", "grange", "grappe", "gravir", "grille", "grippe", "gronde", "guerre", "guidon", "habile", "hangar", "harpon", "hochet", "homard", "humour", "impair", "indien", "jardin", "jaunir", "joueur", "joyeux", "jungle", "laisse", "laitue", "levier", "levres", "lezard", "limace", "limite", "lionne", "litige", "lotion", "louche", "machine", "madame", "maison", "malade", "malice", "manche", "mandat", "marche", "marine", "marron", "maxime", "menace", "merlan", "mesure", "metier", "meuble", "miette", "milieu", "minute", "miroir", "modele", "module", "moisir", "moment", "morale", "motard", "moteur", "nageur", "napper", "nausee", "navire", "nombre", "nougat", "nuance", "ocelot", "office", "oignon", "oiseau", "olives", "orange", "oreille", "orteil", "otarie", "oursin", "ourson", "ouvert", "pagaie", "palais", "panier", "pantin", "papaye", "parade", "parure", "patate", "patron", "pelage", "pendre", "penser", "permis", "phoque", "piment", "placard", "plaire", "planer", "plante", "plaque", "plonge", "poisson", "pommes", "portee", "potage", "potier", "poulet", "poumon", "prison", "profil", "projet", "prudent", "puzzle", "python", "quille", "radeau", "raisin", "ramage", "rancon", "rapace", "rasage", "raviser", "rayure", "reagir", "realite", "recolte", "reflet", "refrain", "regate", "relais", "relier", "renard", "replier", "requin", "reseau", "respect", "retenir", "reunion", "risque", "ronces", "rondin", "ronfle", "rosace", "roseau", "rotule", "rouage", "sachet", "saison", "salade", "saluer", "samedi", "sardine", "saumon", "savant", "savoir", "seance", "secret", "sejour", "sentir", "serpent", "serrure", "servir", "sienne", "silence", "sirene", "soiree", "soldat", "sommet", "sondage", "sortie", "soucis", "source", "souris", "statue", "studio", "sucette", "sucrer", "suivre", "surfer", "suspect", "tablier", "tampon", "taverne", "tenter", "tigron", "timbre", "tiroir", "tisane", "tomate", "tonneau", "topaze", "torche", "tornade", "toucan", "tourbe", "trajet", "tramway", "tranche", "travail", "tremper", "trompe", "trotter", "truite", "tunnel", "turban", "urbain", "vacance", "vallon", "vampire", "vanille", "velours", "vendre", "verdir", "vernis", "victime", "violet", "violon", "vipere", "virgule", "visiter", "vitrail", "voyage", "voyant", "yaourt", "abeille", "artiste", "atelier", "bonheur", "buisson", "carbone", "chaleur", "chameau", "chanson", "chiffon", "collier", "colonne", "console", "corbeau", "cuisine", "domaine", "etagere", "fauteuil", "fenetre", "feuille", "fontaine", "guitare", "horizon", "journal", "lecture", "liberte", "lumiere", "manteau", "matelas", "memoire", "montagne", "musique", "nature", "oreiller", "panneau", "panthere", "passage", "peinture", "pelican", "pendule", "piscine", "plafond", "plateau", "poignet", "portail", "portrait", "poterie", "poulain", "pretexte", "prairie", "present", "prince", "quartier", "raquette", "recette", "requete", "sandale", "sanglier", "scorpion", "semaine", "sorciere", "sucrerie", "theatre", "tonnerre", "tourelle", "triangle", "tribune", "univers", "vacances", "vaisseau", "vautour", "vendeur", "vertige", "village", "violette", "vitamine", "voiture", "volcan", "voyageur", "automne", "bracelet", "cabinet", "calecon", "caverne", "ceinture", "chapeau", "chariot", "cheveux", "clavier", "commode", "costume", "couloir", "courage", "couteau", "craquer", "crevette", "cuiller", "dauphin", "dechets", "demarrer", "desert", "dessert", "diamant", "dortoir", "douleur", "echarpe", "echelle", "ecouter", "ecriture", "element", "epervier", "escargot", "essence", "facteur", "falaise", "famille", "fidele", "flotter", "football", "fourmis", "galerie", "glacier", "glisser", "gourmand", "goeland", "grandir", "grenier", "griffon", "guepard", "habiter", "heroine", "hotesse", "justice", "lanterne", "magique", "maillot", "manchot", "manette", "marteau", "menuet", "message", "mineral", "minuit", "montre", "morceau", "mystere", "noisette", "octobre", "ombrelle", "origine", "ouragan", "papillon", "paradis", "parapet", "peintre", "poireau", "portant", "poussin", "produit", "quatorze", "raconter", "racine", "reflexe", "reussir", "reveler", "royaume", "scenario", "science", "sorcier", "surface", "tableau", "talent", "tambour", "tartine", "tempete", "tenebres", "tournant", "traineau", "traiter", "trottoir", "voyelle", "zodiaque", "aventure", "baignade", "balancer", "barriere", "boutique", "brouette", "campagne", "caravane", "cartable", "chocolat", "cigogne", "commande", "conserve", "couronne", "cravache", "creature", "decembre", "dentiste", "escalier", "fabrique", "faiblard", "feuilles", "fromager", "gardien", "grimoire", "habitant", "histoire", "hopital", "journees", "lavabo", "levrette", "logiciel", "lointain", "macaron", "magicien", "maritime", "matelot", "meteore", "monument", "mosaique", "nappage", "naufrage", "navette", "nautique", "nocturne", "obstacle", "ornement", "palmier", "paquebot", "parfumer", "passager", "patience", "pelerine", "peuplade", "pingouin", "planeur", "poignard", "pommeau", "portique", "promener", "prudence", "pyramide", "raclette", "reparer", "reptile", "resoudre", "rhubarbe", "ricochet", "ronronne", "ruisseau", "sablier", "sandwich", "saucisse", "sauvage", "semelle", "seringue", "souffler", "souhaite", "souvenir", "spatule", "tabouret", "tapioca", "tonnelle", "torrent", "toundra", "tourisme", "tracteur", "trapeze", "truffes", "verdure", "vignoble", "violence", "vitrine", "volaille", "vagabond"];
+
+  function norm(s){
+    return s.toLowerCase().replace(/œ/g,'oe').replace(/æ/g,'ae')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+  }
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  function dateKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+  function pickWord(rnd){ return MOTUS_WORDS[(rnd()*MOTUS_WORDS.length)|0]; }
+
+  // dico de validation des essais (chargé à part) ; repli = base de cibles
+  let DICO=null, dicoState='loading';   // loading | ready | failed
+  const DICO_FALLBACK=new Set(MOTUS_WORDS);
+  function loadDico(){
+    dicoState='loading';
+    fetch('dico.json', {cache:'force-cache'})
+      .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(arr=>{ DICO=new Set(arr); dicoState='ready'; console.log('[Motus] dico chargé :', arr.length, 'mots'); })
+      .catch(err=>{ DICO=null; dicoState='failed'; console.error('[Motus] dico.json non chargé, repli sur la base de mots-cibles :', err.message); });
+  }
+  loadDico();
+  function wordExists(w){
+    if(DICO) return DICO.has(w);
+    // repli si le dico n'a pas chargé : on accepte au moins les mots-cibles
+    return DICO_FALLBACK.has(w);
+  }
+
+  const MAX_ROWS=6, DAILY_WORDS=3;
+  let mState='idle';        // idle | playing | over
+  let mMode='daily';
+  let mWords=[], mWordIdx=0, target='', rowIdx=0, colIdx=0, grid=[];
+  let mStart=0, mInt=null, mElapsed=0;
+  let keyState={};          // lettre -> ok/mis/no
+
+  const el=id=>document.getElementById(id);
+  const mGrid=el('mGrid'), mKeyboard=el('mKeyboard'),
+        mTimer=el('mTimer'), mWordCount=el('mWordCount'),
+        mOverlay=el('mOverlay'), mOverlayMsg=el('mOverlayMsg'),
+        mOverlayScore=el('mOverlayScore'), mPlay=el('mPlay'), mReveal=el('mReveal');
+
+  const mMsg=el('mMsg');
+  let mMsgTimer=null;
+  function flashMsg(txt){
+    mMsg.textContent=txt; mMsg.classList.remove('hidden-el');
+    clearTimeout(mMsgTimer); mMsgTimer=setTimeout(()=>mMsg.classList.add('hidden-el'),1800);
+  }
+  function hideMsg(){ mMsg.classList.add('hidden-el'); }
+
+  function fbReady(){ return window.SUDOKU_FB && window.SUDOKU_FB.enabled; }
+  function fbUser(){ return fbReady() ? window.SUDOKU_FB.user : null; }
+
+  // ---- grille ----
+  function buildGrid(){
+    mGrid.innerHTML='';
+    grid=[];
+    for(let r=0;r<MAX_ROWS;r++){
+      const row=document.createElement('div'); row.className='mrow';
+      const cells=[];
+      for(let c=0;c<target.length;c++){
+        const t=document.createElement('div'); t.className='mtile';
+        if(r===0 && c===0){ t.textContent=target[0].toUpperCase(); t.classList.add('filled'); }
+        row.appendChild(t); cells.push(t);
+      }
+      mGrid.appendChild(row); grid.push(cells);
+    }
+  }
+  function currentRowCells(){ return grid[rowIdx]; }
+
+  function setCell(c, ch){
+    const cell=currentRowCells()[c];
+    cell.textContent=ch?ch.toUpperCase():'';
+    cell.classList.toggle('filled', !!ch);
+  }
+  function curGuess(){
+    return currentRowCells().map(c=>norm(c.textContent)).join('');
+  }
+
+  // ---- clavier visuel ----
+  const KEYS=[['a','z','e','r','t','y','u','i','o','p'],
+              ['q','s','d','f','g','h','j','k','l','m'],
+              ['ENT','w','x','c','v','b','n','DEL']];
+  function buildKeyboard(){
+    mKeyboard.innerHTML=''; keyState={};
+    KEYS.forEach(rowk=>{
+      const kr=document.createElement('div'); kr.className='mkrow';
+      rowk.forEach(k=>{
+        const b=document.createElement('div'); b.className='mkey';
+        if(k==='ENT'||k==='DEL'){ b.classList.add('wide'); b.textContent= k==='ENT'?'Entrée':'←'; b.dataset.act=k; }
+        else { b.textContent=k; b.dataset.k=k; }
+        b.addEventListener('click',()=>{
+          if(k==='ENT') submitRow();
+          else if(k==='DEL') delLetter();
+          else typeLetter(k);
+        });
+        kr.appendChild(b);
+      });
+      mKeyboard.appendChild(kr);
+    });
+  }
+  function refreshKeyboard(){
+    mKeyboard.querySelectorAll('.mkey[data-k]').forEach(b=>{
+      const st=keyState[b.dataset.k];
+      b.classList.remove('ok','mis','no');
+      if(st) b.classList.add(st);
+    });
+  }
+
+  // ---- saisie ----
+  function typeLetter(ch){
+    if(mState!=='playing') return;
+    // colonne 0 de la 1ere ligne est préremplie ; on commence à 1 si row 0
+    let startCol = (rowIdx===0)?1:0;
+    if(colIdx<startCol) colIdx=startCol;
+    if(colIdx>=target.length) return;
+    setCell(colIdx, ch); colIdx++;
+  }
+  function delLetter(){
+    if(mState!=='playing') return;
+    let startCol=(rowIdx===0)?1:0;
+    if(colIdx>startCol){ colIdx--; setCell(colIdx,''); }
+  }
+  function submitRow(){
+    if(mState!=='playing') return;
+    const guess=curGuess();
+    if(guess.length!==target.length) return;          // ligne incomplète
+    // le mot doit exister (sinon essai refusé, ligne non consommée)
+    if(!wordExists(guess)){
+      const row=mGrid.children[rowIdx];
+      row.classList.remove('shake'); void row.offsetWidth; row.classList.add('shake');
+      if(dicoState==='loading') flashMsg('Dictionnaire en cours de chargement…');
+      else if(dicoState==='failed') flashMsg('Dico indisponible (mots-cibles uniquement)');
+      else flashMsg('Ce mot n\'existe pas');
+      return;
+    }
+    hideMsg();
+    // évaluer
+    const tgt=norm(target);
+    const res=new Array(target.length).fill('no');
+    const counts={};
+    for(const ch of tgt) counts[ch]=(counts[ch]||0)+1;
+    for(let i=0;i<target.length;i++){ if(guess[i]===tgt[i]){ res[i]='ok'; counts[guess[i]]--; } }
+    for(let i=0;i<target.length;i++){
+      if(res[i]==='ok') continue;
+      if(counts[guess[i]]>0){ res[i]='mis'; counts[guess[i]]--; }
+    }
+    // appliquer styles + clavier
+    currentRowCells().forEach((cell,i)=>{
+      cell.classList.add(res[i]);
+      const L=guess[i];
+      const prev=keyState[L];
+      if(res[i]==='ok' || (res[i]==='mis'&&prev!=='ok') || (res[i]==='no'&&!prev)) keyState[L]=res[i];
+    });
+    refreshKeyboard();
+    if(guess===tgt){ wordSolved(); return; }
+    rowIdx++; colIdx=0;
+    if(rowIdx>=MAX_ROWS){ wordFailed(); }
+  }
+
+  function wordSolved(){ nextWordOrEnd(true); }
+  function wordFailed(){ nextWordOrEnd(false); }
+  let revealList=[];
+  function nextWordOrEnd(solved){
+    if(!solved) revealList.push(target);
+    mWordIdx++;
+    if(mWordIdx>=mWords.length){ endGame(); return; }
+    loadWord();
+  }
+
+  function loadWord(){
+    target=mWords[mWordIdx];
+    rowIdx=0; colIdx=1;
+    mWordCount.textContent = (mMode==='daily') ? ('Mot '+(mWordIdx+1)+' / '+mWords.length) : 'Partie libre';
+    buildGrid(); buildKeyboard();
+  }
+
+  function startGame(mode){
+    mMode=mode||'daily';
+    revealList=[];
+    let rnd;
+    if(mMode==='daily'){
+      rnd=mulberry32(hashStr('motus-'+dateKey()));
+      mWords=[]; const seen=new Set();
+      while(mWords.length<DAILY_WORDS){ const w=pickWord(rnd); if(!seen.has(w)){ seen.add(w); mWords.push(w); } }
+    } else {
+      rnd=Math.random; mWords=[pickWord(rnd)];
+    }
+    mWordIdx=0; mState='playing'; mElapsed=0;
+    mOverlay.classList.add('hidden-el');
+    el('mLbOverlay').classList.add('hidden-el');
+    mPlay.classList.remove('hidden-el');
+    loadWord();
+    mStart=Date.now();
+    mTimer.textContent='00:00';
+    clearInterval(mInt);
+    mInt=setInterval(()=>{
+      mElapsed=((Date.now()-mStart)/1000)|0;
+      mTimer.textContent=fmt(mElapsed);
+    },250);
+  }
+  function fmt(s){ const m=(s/60)|0; return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+  async function endGame(){
+    clearInterval(mInt); mState='over';
+    const total=mElapsed;
+    if(mMode==='daily'){ await submitMotus(total); }
+    mPlay.classList.add('hidden-el');
+    const suffix = mMode==='daily' ? '' : ' (partie libre, non classée)';
+    mOverlayMsg.textContent='Terminé'+suffix;
+    mOverlayScore.textContent = (mMode==='daily'? '3 mots en ' : 'Mot fait en ')+fmt(total);
+    mOverlayScore.classList.remove('hidden-el');
+    if(revealList.length){
+      mReveal.innerHTML='<span class="ml">Mots non trouvés :</span> '+revealList.join(' · ');
+      mReveal.classList.remove('hidden-el');
+    } else mReveal.classList.add('hidden-el');
+    el('mMenu').classList.remove('hidden-el');
+    mOverlay.classList.remove('hidden-el');
+  }
+
+  // clavier physique
+  document.addEventListener('keydown',e=>{
+    if(!document.body.classList.contains('view-motus')) return;
+    if(mState!=='playing') return;
+    if(e.key==='Enter'){ e.preventDefault(); submitRow(); }
+    else if(e.key==='Backspace'){ e.preventDefault(); delLetter(); }
+    else if(/^[a-zA-Z]$/.test(e.key)){ typeLetter(e.key.toLowerCase()); }
+  });
+
+  // ---- Daily gate ----
+  async function tryDaily(){
+    if(!fbUser()){
+      mOverlayMsg.textContent='Daily — connexion requise';
+      if(window.SUDOKU_FB && window.SUDOKU_FB.signIn) window.SUDOKU_FB.signIn();
+      return;
+    }
+    mOverlayMsg.textContent='Vérification…';
+    let played=false;
+    try{ played=await window.SUDOKU_FB.hasPlayed('motus', dateKey()); }catch(_){}
+    if(played){ mOverlayMsg.textContent='Daily déjà joué aujourd\'hui'; renderMotusLb(); return; }
+    startGame('daily');
+  }
+
+  async function submitMotus(time){
+    if(fbUser() && window.SUDOKU_FB.submitMotus){
+      try{ await window.SUDOKU_FB.submitMotus(dateKey(), time, fbUser().displayName||'Anonyme'); }catch(_){}
+    }
+  }
+  async function renderMotusLb(){
+    const list=el('mLbList'); list.innerHTML='';
+    let rows=[];
+    if(fbUser() && window.SUDOKU_FB.topMotus){
+      let all=[]; try{ all=await window.SUDOKU_FB.topMotus(dateKey()); }catch(_){ all=[]; }
+      rows=all.map(s=>({time:s.time,name:s.name||'Anonyme'})).sort((a,b)=>a.time-b.time);
+    }
+    if(!rows.length){
+      const li=document.createElement('li'); li.className='empty';
+      li.textContent= fbUser()?'Aucun temps aujourd\'hui.':'Connecte-toi pour voir le classement.';
+      list.appendChild(li);
+    } else {
+      rows.slice(0,5).forEach((r,i)=>{
+        const li=document.createElement('li');
+        li.innerHTML='<span class="rank">'+(i+1)+'</span><span>'+r.name+' · '+fmt(r.time)+'</span>';
+        list.appendChild(li);
+      });
+    }
+    mOverlay.classList.add('hidden-el');
+    el('mLbOverlay').classList.remove('hidden-el');
+  }
+  function showMenuM(){
+    mPlay.classList.add('hidden-el');
+    el('mLbOverlay').classList.add('hidden-el');
+    mReveal.classList.add('hidden-el');
+    mOverlayMsg.textContent='Motus';
+    mOverlayScore.classList.add('hidden-el');
+    el('mMenu').classList.remove('hidden-el');
+    mOverlay.classList.remove('hidden-el');
+  }
+  function resetMotus(){
+    clearInterval(mInt); mState='idle'; mWordIdx=0; revealList=[];
+    showMenuM();
+  }
+  window.resetMotus=resetMotus;
+
+  el('mDaily').addEventListener('click',tryDaily);
+  el('mRandom').addEventListener('click',()=>startGame('random'));
+  el('mLbBtn').addEventListener('click',()=>{ if(mState!=='playing') renderMotusLb(); });
+  el('mLbClose').addEventListener('click',()=>{
+    el('mLbOverlay').classList.add('hidden-el');
+    if(mState==='over'){ el('mMenu').classList.remove('hidden-el'); mOverlayScore.classList.remove('hidden-el'); }
+    else showMenuM();
+    mOverlay.classList.remove('hidden-el');
+  });
+  el('mMusicBtn').addEventListener('click',()=>{ if(window.MUSIC) window.MUSIC.toggle(); });
+  el('mNightBtn').addEventListener('click',()=>{
+    document.body.classList.toggle('night');
+    const n=document.body.classList.contains('night');
+    el('mNightBtn').textContent=n?'Jour':'Nuit';
+  });
+  el('rNightBtn').addEventListener('click',()=>{
+    document.body.classList.toggle('night');
+    el('rNightBtn').textContent=document.body.classList.contains('night')?'Jour':'Nuit';
+  });
+
+  showMenuM();
+
+  // ============ CONTRÔLEUR DE NAVIGATION GLOBAL (4 slides) ============
+  const SLIDES=['sudoku','anagramme','motus','ranking'];
+  const slidesEl=el('slides'), arrowR=el('arrowRight'), arrowL=el('arrowLeft');
+  let idx=0;
+
+  function applyView(){
+    slidesEl.style.transform='translateX(-'+(idx*100)+'vw)';
+    document.body.classList.remove('view-sudoku','view-anagramme','view-motus','view-ranking');
+    document.body.classList.add('view-'+SLIDES[idx]);
+    arrowL.classList.toggle('visible', idx>0);
+    arrowR.classList.toggle('visible', idx<SLIDES.length-1);
+    if(window.syncMusicButtons) window.syncMusicButtons();
+  }
+  function leaveSlide(i){
+    if(SLIDES[i]==='sudoku' && window.resetSudoku) window.resetSudoku();
+    if(SLIDES[i]==='anagramme' && window.resetWords) window.resetWords();
+    if(SLIDES[i]==='motus') resetMotus();
+  }
+  function enterSlide(i){
+    if(SLIDES[i]==='ranking') renderRanking();
+  }
+  function go(n){
+    if(n<0||n>=SLIDES.length||n===idx) return;
+    leaveSlide(idx);
+    idx=n; applyView(); enterSlide(idx);
+  }
+  window.NAV={ go:(name)=>{ const i=SLIDES.indexOf(name); if(i>=0) go(i); } };
+
+  arrowR.addEventListener('click',()=>go(idx+1));
+  arrowL.addEventListener('click',()=>go(idx-1));
+
   if(!('ontouchstart' in window) && navigator.maxTouchPoints===0){
     document.addEventListener('mousemove',e=>{
       const w=window.innerWidth;
-      if(!onWords && e.clientX > w-60) arrowR.classList.add('visible');
-      else if(!onWords && e.clientX < w-160) arrowR.classList.remove('visible');
-      if(onWords && e.clientX < 60) arrowL.classList.add('visible');
-      else if(onWords && e.clientX > 160) arrowL.classList.remove('visible');
+      if(idx<SLIDES.length-1){ if(e.clientX>w-60) arrowR.classList.add('visible'); else if(e.clientX<w-160) arrowR.classList.remove('visible'); }
+      if(idx>0){ if(e.clientX<60) arrowL.classList.add('visible'); else if(e.clientX>160) arrowL.classList.remove('visible'); }
     });
-  } else {
-    updateArrows(); // sur mobile, flèches toujours visibles
   }
+  applyView();
 
-  showMenu(); // écran d'accueil Anagramme : menu Daily / Random
+  // ============ CLASSEMENT GÉNÉRAL ============
+  async function renderRanking(){
+    el('rDate').textContent='Daily du '+dateKey();
+    const cols=el('rCols'); cols.innerHTML='';
+    const cards=[
+      { title:'SUDOKU', metric:'meilleur temps', kind:'time',
+        load:async()=>{ try{ return (await window.SUDOKU_FB.top(dateKey())).map(s=>({v:s.time,name:s.name})); }catch(_){ return []; } }, asc:true },
+      { title:'ANAGRAMME', metric:'mots trouvés', kind:'count',
+        load:async()=>{ try{ return (await window.SUDOKU_FB.topWord(dateKey())).map(s=>({v:s.score,name:s.name})); }catch(_){ return []; } }, asc:false },
+      { title:'MOTUS', metric:'meilleur temps (3 mots)', kind:'time',
+        load:async()=>{ try{ return (await window.SUDOKU_FB.topMotus(dateKey())).map(s=>({v:s.time,name:s.name})); }catch(_){ return []; } }, asc:true }
+    ];
+    for(const card of cards){
+      const div=document.createElement('div'); div.className='rcard';
+      div.innerHTML='<h3>'+card.title+'</h3><div class="rmetric">'+card.metric+'</div>';
+      const ol=document.createElement('ol');
+      let rows = fbReady() ? await card.load() : [];
+      rows.sort((a,b)=> card.asc ? a.v-b.v : b.v-a.v);
+      if(!rows.length){
+        const e=document.createElement('div'); e.className='empty';
+        e.textContent= fbReady() ? 'Aucun score aujourd\'hui.' : 'Hors-ligne.';
+        ol.appendChild(e);
+      } else {
+        rows.slice(0,5).forEach((r,i)=>{
+          const li=document.createElement('li');
+          const val = card.kind==='time' ? fmt(r.v) : (r.v+' mots');
+          li.innerHTML='<span class="rank">'+(i+1)+'</span><span>'+(r.name||'Anonyme')+' · '+val+'</span>';
+          ol.appendChild(li);
+        });
+      }
+      div.appendChild(ol); cols.appendChild(div);
+    }
+  }
+  window.renderRanking=renderRanking;
 })();
 </script>
 
@@ -1364,6 +1854,19 @@
         const ref = doc(db, game, dayKey, "scores", auth.currentUser.uid);
         const s = await getDoc(ref);
         return s.exists();
+      },
+      // MOTUS DAILY : meilleur temps (3 mots), une seule soumission par jour
+      submitMotus: async (dayKey, time, name) => {
+        const ref = doc(db, "motus", dayKey, "scores", auth.currentUser.uid);
+        const s = await getDoc(ref);
+        if (s.exists()) return false;
+        await setDoc(ref, { time, name, ts: Date.now() }, { merge: false });
+        return true;
+      },
+      topMotus: async (dayKey) => {
+        const q = query(collection(db, "motus", dayKey, "scores"), orderBy("time", "asc"), limit(200));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => d.data());
       }
     };
     onAuthStateChanged(auth, (u) => {
