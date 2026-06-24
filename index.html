@@ -626,6 +626,9 @@
 
 <script>
 (function(){
+  // Empêche le menu contextuel du navigateur (le clic droit sert de "note" dans le jeu)
+  document.addEventListener('contextmenu', e=>e.preventDefault());
+
   let solution=[], puzzle=[], given=[], notes=[], errors=[];
   let diff='moyen', curVal=1;
   let startTime=null, elapsedBase=0, timerInt=null;
