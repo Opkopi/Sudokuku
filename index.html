@@ -185,7 +185,6 @@
     padding: 10px 8px; display: flex; align-items: center; justify-content: center;
   }
   .volwrap input[type=range] {
-    -webkit-appearance: slider-vertical; appearance: slider-vertical;
     writing-mode: vertical-lr; direction: rtl;
     width: 6px; height: 110px;
     background: var(--line-thin); outline: none; cursor: pointer;
@@ -430,12 +429,7 @@
 
 <button class="gearbtn" id="gearBtn" aria-label="Options">⚙</button>
 
-<div class="slides" id="slides">
-<div class="slide" id="slideSudoku">
-
-<div class="topbar">
-  <h1>SUDOKUKU</h1>
-  <div class="topbtns" id="topbtns">
+<div class="topbtns" id="topbtns">
     <button class="iconbtn" id="googleBtn">Connexion</button>
     <div class="musicgroup">
       <button class="iconbtn" id="musicBtn">♪ Off</button>
@@ -446,6 +440,26 @@
     <button class="iconbtn" id="lbBtn">Top 5</button>
     <button class="iconbtn" id="nightBtn">Nuit</button>
   </div>
+<div class="wtopbtns">
+      <button class="iconbtn" id="wMusicBtn">♪ Off</button>
+      <button class="iconbtn" id="wLbBtn">Top 5</button>
+      <button class="iconbtn" id="wNightBtn">Nuit</button>
+    </div>
+<div class="mtopbtns">
+      <button class="iconbtn" id="mMusicBtn">♪ Off</button>
+      <button class="iconbtn" id="mLbBtn">Top 5</button>
+      <button class="iconbtn" id="mNightBtn">Nuit</button>
+    </div>
+<div class="rtopbtns">
+      <button class="iconbtn" id="rNightBtn">Nuit</button>
+    </div>
+
+<div class="slides" id="slides">
+<div class="slide" id="slideSudoku">
+
+<div class="topbar">
+  <h1>SUDOKUKU</h1>
+  <!--topbtns-moved-->
 </div>
 
 <div class="diffs" id="diffs">
@@ -499,11 +513,7 @@
 
 <div class="slide" id="slideWords">
   <div class="topbar"><h1>ANAGRAMME</h1>
-    <div class="wtopbtns">
-      <button class="iconbtn" id="wMusicBtn">♪ Off</button>
-      <button class="iconbtn" id="wLbBtn">Top 5</button>
-      <button class="iconbtn" id="wNightBtn">Nuit</button>
-    </div>
+    <!--wtopbtns-moved-->
   </div>
 
   <div class="wplay hidden-el" id="wPlay">
@@ -546,11 +556,7 @@
 
 <div class="slide" id="slideMotus">
   <div class="topbar"><h1>MOTUS</h1>
-    <div class="mtopbtns">
-      <button class="iconbtn" id="mMusicBtn">♪ Off</button>
-      <button class="iconbtn" id="mLbBtn">Top 5</button>
-      <button class="iconbtn" id="mNightBtn">Nuit</button>
-    </div>
+    <!--mtopbtns-moved-->
   </div>
 
   <div class="mplay hidden-el" id="mPlay">
@@ -582,9 +588,7 @@
 
 <div class="slide" id="slideRanking">
   <div class="topbar"><h1>CLASSEMENT</h1>
-    <div class="rtopbtns">
-      <button class="iconbtn" id="rNightBtn">Nuit</button>
-    </div>
+    <!--rtopbtns-moved-->
   </div>
   <div class="rwrap" id="rWrap">
     <div class="rsub" id="rDate">—</div>
